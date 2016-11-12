@@ -13,7 +13,7 @@ import sys
 import env
 
 # FUNCTION get_conf
-def get_config ( config_path ) :
+def get_config ( string config_path ) :
 	"""
 	Get the full program configuration from the file and returns a dictionary with 
 	all its parameters. Program configuration is stored in raw JSON so we just need
@@ -27,6 +27,42 @@ def get_config ( config_path ) :
 	config = json.loads( read_config )			#parse read config as JSON into readable dictionary
 
 	return config
+
+def show_config ( dict config ) :
+	"""
+	Show the full program configuration from the file.
+	Program configuration is received as a dictionary
+	"""
+
+	sys.stdout.write( '{} '.format( MSG_CURRENT_CONFIG ) )
+	sys.stdout.write( '{} : {}'.format( MSG_DCOS_IP. config['DCOS_IP'] ) ) 
+	sys.stdout.write( '{} : {}'.format( MSG_DCOS_USERNAME. config['DCOS_USERNAME'] ) )
+	sys.stdout.write( '{} : {}'.format( MSG_DCOS_PW. config['DCOS_PW'] ) )
+	sys.stdout.write( '{} : {}'.format( MSG_DEFAULT_PW. config['DCOS_DEFAULT_PW'] ) )
+
+	return True
+
+def delete_local_buffer ( string path ) :
+	"""
+	Delete the local buffer that stores the temporary configuration.
+	"""
+	if os.path.exists( path ):
+		for root, dirs, files in os.walk( path, topdown=False ):
+	    	for name in files:
+	        	os.remove( os.path.join( root, name ) )
+	    	for name in dirs:
+	        	os.rmdir( os.path.join(root, name ) )
+
+	return True
+
+def clear_screen():
+	"""
+	Clear the screen.
+	"""
+	os.system('clear')
+
+	return True
+
 
 def log ( string log_level, string operation, 
 	string obj_0, string obj_1, string obj_2, string obj_3, string obj_4,
@@ -76,7 +112,7 @@ def clear_screen( ):
 	Returns True
 	"""
 
-	#TODO:
+	os.system('clear')
 
 	return True
 
@@ -113,14 +149,15 @@ def menu_line (string hotkey, string message, string config_param, string state_
 
 def get_input ( string message, list valid_options ):
 	"""
-	Ask the user to enter an option, validate is a valid option from the valid_optionss. Loops until a valid option is entered.
+	Ask the user to enter an option, validate is a valid option from the valid_options. Loops until a valid option is entered.
 	Returns the entered option. ( TODO: or ''?/False? if cancelled. )
+	If valid_options is not passed, this is used to enter a value and not an option (any value is valid).
 	"""
 
 	while True:
 		sys.stdout.write('{0} {1}: '.format( mark_input, message ) )
 		input( user_input )
-		if (user_input in valid_options):
+		if ( ( valid_options == None ) or ( user_input in valid_options ) ):
 			return user_input
 		else
 			log(
@@ -130,8 +167,7 @@ def get_input ( string message, list valid_options ):
 				indx=0,
 				content=ERROR_INVALID_OPTION
 				)
-		return input
-
+			return False	
 
 def display_login_menu( dict config ):
 	"""
@@ -142,27 +178,21 @@ def display_login_menu( dict config ):
 	"""
 
 	hk = hotkeys_login	#brief notation
-	is_ok = false
 
-	while ( is_ok == false ):
-		clear_screen()
-		menu_line()
-		menu_line( message=MSG_APP_TITLE )
-		menu_line()
-		menu_line( message=MSG_CURRENT_CONFIG )
-		menu_line()
-		menu_line( hotkey=hk['KEY_DCOS_IP'], message=MSG_DCOS_IP, config_param=config['DCOS_IP'] )
-		menu_line()
-		menu_line( hotkey=hk['KEY_DCOS_USERNAME'], message=MSG_DCOS_USERNAME, config_param=config['USERNAME'] )
-		menu_line()	
-		menu_line( hotkey=hk['KEY_DCOS_PW'], message=MSG_DCOS_PW, config_param=config['PASSWORD'] )
-		menu_line()	
-		menu_line( hotkey=hk['KEY_DEFAULT_PW'], message=MSG_DEFAULT_PW, config_param=config['DEFAULT_PW'] )
-		menu_line()	
-
-		is_ok = get_input( message=MSG_IS_OK, options=list( yYnN.keys() ) )
-		if is_ok == false:
-			get_input( message=MSG_ENTER_PARAM_CHANGE, options=list( hotkeys_login.keys() ) )
+	clear_screen()
+	menu_line()
+	menu_line( message=MSG_APP_TITLE )
+	menu_line()
+	menu_line( message=MSG_CURRENT_CONFIG )
+	menu_line()
+	menu_line( hotkey=hk['KEY_DCOS_IP'], message=MSG_DCOS_IP, config_param=config['DCOS_IP'] )
+	menu_line()
+	menu_line( hotkey=hk['KEY_DCOS_USERNAME'], message=MSG_DCOS_USERNAME, config_param=config['USERNAME'] )
+	menu_line()	
+	menu_line( hotkey=hk['KEY_DCOS_PW'], message=MSG_DCOS_PW, config_param=config['PASSWORD'] )
+	menu_line()	
+	menu_line( hotkey=hk['KEY_DEFAULT_PW'], message=MSG_DEFAULT_PW, config_param=config['DEFAULT_PW'] )
+	menu_line()	
 
 	return True
 

@@ -5,6 +5,30 @@
 # Author: Fernando Sanchez [ fernando at mesosphere.com ]
 #
 
+CONFIG_FILE="./.config.json"
+
+#Configurable default values
+DCOS_IP=127.0.0.1
+USERNAME='bootstrapuser'
+PASSWORD='deleteme'
+DEFAULT_USER_PASSWORD='deleteme'
+DEFAULT_USER_SECRET='secret'
+
+#directories
+WORKING_DIR='./'
+DATA_DIR=WORKING_DIR+'/data'
+SRC_DIR=WORKING_DIR+'/src'
+BACKUP_DIR=$WORKING_DIR+'/backup'
+
+#data files
+USERS_FILE=DATA_DIR+'/users.json'
+USERS_GROUPS_FILE=DATA_DIR+'/users_groups.json'
+GROUPS_FILE=DATA_DIR+'/groups.json'
+GROUPS_USERS_FILE=DATA_DIR+'/groups_users.json'
+ACLS_FILE=DATA_DIR+'/acls.json'
+ACLS_PERMISSIONS_FILE=DATA_DIR+'/acls_permissions.json'
+
+
 MENU_WIDTH = 50
 
 #Mark for outputs and inputs
@@ -21,6 +45,7 @@ MSG_DCOS_PW		 		= 'DC/OS password: '
 MSG_DEFAULT_PW 			= 'Default password for restored users: '
 MSG_IS_OK				= 'Is this configuration ok? (y/n): '
 MSG_ENTER_PARAM_CHANGE	= 'Enter parameter to change: '
+MSG_ENTER_NEW_VALUE		= 'Enter new value: '
 #Main menu
 MSG_AVAIL_CMD			= 'Available commands: '
 MSG_ENTER_CMD			= 'Enter commmand: '
@@ -47,39 +72,34 @@ MSG_EXIT				= 'EXIT this application.'
 
 #hotkeys - login menu
 hotkeys_login = {
-'KEY_DCOS_IP' 		: '1',
-'KEY_DCOS_USERNAME'	: '2',
-'KEY_DCOS_PW' 		: '3',
-'KEY_DEFAULT_PW' 	: '4'
+'1' : 'DCOS_IP',
+'2'	: 'DCOS_USERNAME',
+'3' : 'DCOS_PW',
+'4' : 'DEFAULT_PW'
 }
 
 #hotkeys - main menu
 hotkeys_main = {
-'KEY_LIST_CONFIG' 	: 'd',
-'KEY_LOAD_CONFIG'	: 'l',
-'KEY_SAVE_CONFIG'	: 's',
-'KEY_GET_USERS' 	: '1',
-'KEY_GET_GROUPS' 	: '2',
-'KEY_GET_ACLS' 		: '3',
-'KEY_get_GET' 		: 'g',
-'KEY_PUT_USERS' 	: '4',
-'KEY_PUT_GROUPS' 	: '5',
-'KEY_PUT_ALCS' 		: '6',
-'KEY_FULL_PUT' 		: 'p',
-'KEY_CHECK_USERS' 	: '7',
-'KEY_CHECK_GROUPS' 	: '8',
-'KEY_CHECK_ACLS' 	: '9',
-'KEY_CHECK_CONFIG' 	: '0',
-'KEY_EXIT' 			: 'x'
+'d' : 'LIST_CONFIG',
+'l'	: 'LOAD_CONFIG',
+'s'	: 'SAVE_CONFIG',
+'1' : 'GET_USERS',
+'2' : 'GET_GROUPS',
+'3' : 'GET_ACLS',
+'g' : 'FULL_GET',
+'4' : 'PUT_USERS',
+'5' : 'PUT_GROUPS',
+'6' : 'PUT_ALCS',
+'p' : 'FULL_PUT',
+'7' : 'CHECK_USERS',
+'8' : 'CHECK_GROUPS',
+'9' : 'CHECK_ACLS',
+'0' : 'CHECK_CONFIG',
+'x' : 'EXIT'
 }
 
 # y/n input options
-yYnN = {
-'y'		: 'y',
-'Y'		: 'Y',
-'n'		: 'n',
-'N'		: 'N',
-}
+yYnN = ['y','Y','n','N']
 
 #Error messages
 ERROR_CONFIG_NOT_FOUND = 'Configuration not found. Please run ./run.sh first.'
