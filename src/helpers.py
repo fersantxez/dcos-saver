@@ -10,50 +10,9 @@
 import os
 import json
 import sys
+from shutil import copyfile
+from ntpath import basename
 import env
-
-# FUNCTION get_conf
-def get_config ( string config_path ) :
-	"""
-	Get the full program configuration from the file and returns a dictionary with 
-	all its parameters. Program configuration is stored in raw JSON so we just need
-	to load it and use standard `json` to parse it into a dictionary.
-	Returns config as a dictionary
-	"""
-
-	config_file = open( config_path, 'r' )  	#open the config file for reading
-	read_config = config_file.read()			#read the entire file into a dict with JSON format
-	config_file.close()
-	config = json.loads( read_config )			#parse read config as JSON into readable dictionary
-
-	return config
-
-def show_config ( dict config ) :
-	"""
-	Show the full program configuration from the file.
-	Program configuration is received as a dictionary
-	"""
-
-	sys.stdout.write( '{} '.format( MSG_CURRENT_CONFIG ) )
-	sys.stdout.write( '{} : {}'.format( MSG_DCOS_IP. config['DCOS_IP'] ) ) 
-	sys.stdout.write( '{} : {}'.format( MSG_DCOS_USERNAME. config['DCOS_USERNAME'] ) )
-	sys.stdout.write( '{} : {}'.format( MSG_DCOS_PW. config['DCOS_PW'] ) )
-	sys.stdout.write( '{} : {}'.format( MSG_DEFAULT_PW. config['DCOS_DEFAULT_PW'] ) )
-
-	return True
-
-def delete_local_buffer ( string path ) :
-	"""
-	Delete the local buffer that stores the temporary configuration.
-	"""
-	if os.path.exists( path ):
-		for root, dirs, files in os.walk( path, topdown=False ):
-	    	for name in files:
-	        	os.remove( os.path.join( root, name ) )
-	    	for name in dirs:
-	        	os.rmdir( os.path.join(root, name ) )
-
-	return True
 
 def clear_screen():
 	"""
@@ -106,13 +65,103 @@ def log ( string log_level, string operation,
 		sys.stdout.flush()
 	return True
 
-def clear_screen( ):
+def get_config ( string config_path ) :
 	"""
-	Clear the screen.
-	Returns True
+	Get the full program configuration from the file and returns a dictionary with 
+	all its parameters. Program configuration is stored in raw JSON so we just need
+	to load it and use standard `json` to parse it into a dictionary.
+	Returns config as a dictionary.
 	"""
 
-	os.system('clear')
+	config_file = open( config_path, 'r' )  	#open the config file for reading
+	read_config = config_file.read()			#read the entire file into a dict with JSON format
+	config_file.close()
+	config = json.loads( read_config )			#parse read config as JSON into readable dictionary
+
+	return config
+
+def show_config ( dict config ) :
+	"""
+	Show the full program configuration from the file.
+	Program configuration is received as a dictionary.
+	"""
+
+	sys.stdout.write( '{} '.format( MSG_CURRENT_CONFIG ) )
+	sys.stdout.write( '{} : {}'.format( MSG_DCOS_IP. config['DCOS_IP'] ) ) 
+	sys.stdout.write( '{} : {}'.format( MSG_DCOS_USERNAME. config['DCOS_USERNAME'] ) )
+	sys.stdout.write( '{} : {}'.format( MSG_DCOS_PW. config['DCOS_PW'] ) )
+	sys.stdout.write( '{} : {}'.format( MSG_DEFAULT_PW. config['DCOS_DEFAULT_PW'] ) )
+
+	return True
+
+def list_config ( dict config ):
+	"""
+	List all the DC/OS configurations available on disk to be loaded.
+	"""
+	sys.stdout.write( '{} '.format( MSG_AVAIL_CONFIGS ) )
+	os.listdir( BACKUP_DIR )
+	value = get_input( message=MSG_ENTER_NEW_VALUE )
+
+	return True
+
+def load_config ( dict config ):
+	"""
+	Load a DC/OS configuration from disk into local buffer.
+	"""
+	list_config( config )
+	name = get_input( message=MSG_ENTER_CONFIG_LOAD )
+	if os.path.exists( BACKUP_DIR+'/'+name ):
+		copyfile( BACKUP_DIR+'/'+name+'/'+basename( USERS_FILE ), 				DATA_DIR+'/'+basename( USERS_FILE )  )
+		copyfile( BACKUP_DIR+'/'+name+'/'+basename( USERS_GROUPS_FILE ), 		DATA_DIR+'/'+basename( USERS_GROUPS_FILE )  )
+		copyfile( BACKUP_DIR+'/'+name+'/'+basename( GROUPS_FILE ), 				DATA_DIR+'/'+basename( GROUPS_FILE )  )
+		copyfile( BACKUP_DIR+'/'+name+'/'+basename( GROUPS_USERS_FILE ), 		DATA_DIR+'/'+basename( GROUPS_USERS_FILE )  )
+		copyfile( BACKUP_DIR+'/'+name+'/'+basename( ACLS_FILE ), 				DATA_DIR+'/'+basename( ACLS_FILE )  )
+		copyfile( BACKUP_DIR+'/'+name+'/'+basename( ACLS_PERMISSIONS_FILE ),	DATA_DIR+'/'+basename( ACLS_PERMISSIONS_FILE )  )
+		return True
+	else:
+		log(
+			log_level='ERROR',
+			operation='LOAD',
+			obj_0='Config',
+			indx=0,
+			content=ERROR_CONFIG_NOT_FOUND
+			)
+		return False
+
+def save_config ( dict config ):
+	"""
+	Save the running DC/OS configuration to disk from local buffer.
+	"""
+	list_config( config )
+	name = get_input( message=MSG_ENTER_CONFIG_SAVE )
+	copyfile( DATA_DIR+'/'+basename( USERS_FILE ), 				BACKUP_DIR+'/'+name+'/'+basename( USERS_FILE ) )
+	copyfile( DATA_DIR+'/'+basename( USERS_GROUPS_FILE ), 		BACKUP_DIR+'/'+name+'/'+basename( USERS_GROUPS_FILE ) )
+	copyfile( DATA_DIR+'/'+basename( GROUPS_FILE ), 			BACKUP_DIR+'/'+name+'/'+basename( GROUPS_FILE ) )
+	copyfile( DATA_DIR+'/'+basename( GROUPS_USERS_FILE ),  		BACKUP_DIR+'/'+name+'/'+basename( GROUPS_USERS_FILE ) )
+	copyfile( DATA_DIR+'/'+basename( ACLS_FILE ), 				BACKUP_DIR+'/'+name+'/'+basename( ACLS_FILE ) )
+	copyfile( DATA_DIR+'/'+basename( ACLS_PERMISSIONS_FILE ),	BACKUP_DIR+'/'+name+'/'+basename( ACLS_PERMISSIONS_FILE ) )
+
+	return True
+
+
+def delete_local_buffer ( string path ) :
+	"""
+	Delete the local buffer that stores the temporary configuration.
+	"""
+	if os.path.exists( path ):
+		for root, dirs, files in os.walk( path, topdown=False ):
+	    	for name in files:
+	        	os.remove( os.path.join( root, name ) )
+	    	for name in dirs:
+	        	os.rmdir( os.path.join(root, name ) )
+	else:
+		log(
+			log_level='ERROR',
+			operation='DELETE',
+			obj_0='Local_buffer',
+			indx=0,
+			content=ERROR_BUFFER_NOT_FOUND
+			)
 
 	return True
 
@@ -123,7 +172,7 @@ def menu_line (string hotkey, string message, string config_param, string state_
 	If a config value is provided, print it at the end.
 	If state is provided, print at the very end.
 	If no message provided, print a full separation line.
-	Returns True
+	Returns True.
 	"""
 	if not ( hotkey == None ):
 		sys.stdout.write('{0}'.format( hotkey ) )
@@ -166,8 +215,7 @@ def get_input ( string message, list valid_options ):
 				obj_0='INPUT',
 				indx=0,
 				content=ERROR_INVALID_OPTION
-				)
-			return False	
+				)	
 
 def display_login_menu( dict config ):
 	"""
@@ -203,7 +251,7 @@ def display_main_menu( dict config, dict state ):
 	Use the "hotkeys_main" and the login menu messages from "env".
 	Display the configuration parameters received as parameter.
 	Display the state received as parameter.
-	Returns (True) when the user decides to exit
+	Returns (True) when the user decides to exit.
 	"""
 
 	hk = hotkeys_main	#brief notation
@@ -248,5 +296,13 @@ def display_main_menu( dict config, dict state ):
 	# http://stackoverflow.com/questions/11479816/what-is-the-python-equivalent-for-a-case-switch-statement
 
 	return True
+
+def noop():
+	"""
+	No Op.
+	"""
+
+	return True
+
 
 
