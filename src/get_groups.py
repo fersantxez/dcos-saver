@@ -19,7 +19,7 @@ import requests
 import json
 import helpers			#helper functions in separate module helpers.py
 
-def get_groups ( string DCOS_IP, string save_path ):
+def get_groups ( DCOS_IP, save_path ):
 
 	"""	Get the list of groups from a DC/OS cluster as a JSON blob.
 	Save the groups to the text file in the save_path provided.
@@ -40,7 +40,7 @@ def get_groups ( string DCOS_IP, string save_path ):
 		log(
 			log_level='INFO',
 			operation='GET',
-			obj_0='Groups',
+			objects=['Groups'],
 			indx=0,
 			content=request.status_code
 			)
@@ -48,17 +48,17 @@ def get_groups ( string DCOS_IP, string save_path ):
 		log(
 			log_level='INFO',
 			operation='GET',
-			obj_0='Groups',
+			objects=['Groups'],
 			indx=0,
 			content=request.status_code
 			)
 
-	#the DC/OS API defines the users as a dict with {'array:'[]} structure
-	users = json.loads( request.json )
+	#the DC/OS API defines the groupss as a dict with {'array:'[]} structure
+	groups = json.loads( request.json )
 	log(
 		log_level='DEBUG',
 		operation='GET',
-		obj_0='Users',
+		objects=['Groups'],
 		indx=0,
 		content=users
 		)	
@@ -71,14 +71,14 @@ def get_groups ( string DCOS_IP, string save_path ):
 	log(
 		log_level='INFO',
 		operation='GET',
-		obj_0='Groups',
+		objects=['Groups'],
 		indx=0,
 		content='* DONE *'
 		)	
 
 	return groups
 
-def get_groups_users ( string DCOS_IP, string save_path, dict groups ):
+def get_groups_users ( DCOS_IP, save_path, groups ):
 	"""
 	Get the list of users that are members of a group from a DC/OS cluster as a JSON blob.
 	Save the groups_users to the text file in the save_path provided.
@@ -113,8 +113,7 @@ def get_groups_users ( string DCOS_IP, string save_path, dict groups ):
 			log(
 				log_level='INFO',
 				operation='GET',
-				obj_0='Groups',
-				obj_1='Users',
+				objects=['Groups','Users'],
 				indx=index,
 				content=request.status_code
 				)	
@@ -122,8 +121,7 @@ def get_groups_users ( string DCOS_IP, string save_path, dict groups ):
 			log(
 				log_level='ERROR',
 				operation='GET',
-				obj_0='Groups',
-				obj_1='Users',
+				objects=['Groups','Users'],
 				indx=index,
 				content=error
 				)	
@@ -148,9 +146,7 @@ def get_groups_users ( string DCOS_IP, string save_path, dict groups ):
 				log(
 					log_level='INFO',
 					operation='GET',
-					obj_0='Groups',
-					obj_1='Users',
-					obj_2='Permissions',
+					objects=['Groups','Users','Permissions'],
 					indx=index2,
 					content=request.status_code
 					)	
@@ -158,9 +154,7 @@ def get_groups_users ( string DCOS_IP, string save_path, dict groups ):
 				log(
 					log_level='ERROR',
 					operation='GET',
-					obj_0='Groups',
-					obj_1='Users',
-					obj_2='Permissions',
+					objects=['Groups','Users','Permissions'],
 					indx=index2,
 					content=error
 					)			
@@ -180,8 +174,7 @@ def get_groups_users ( string DCOS_IP, string save_path, dict groups ):
 	log(
 		log_level='INFO',
 		operation='GET',
-		obj_0='Groups',
-		obj_1='Users',
+		objects=['Groups','Users'],
 		indx=0,
 		content='* DONE *'
 		)	

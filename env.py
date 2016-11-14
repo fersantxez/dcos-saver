@@ -5,20 +5,22 @@
 # Author: Fernando Sanchez [ fernando at mesosphere.com ]
 #
 
-CONFIG_FILE="./.config.json"
+import os
+
+CONFIG_FILE=os.getcwd()+'/.config.json'
 
 #Configurable default values
-DCOS_IP=127.0.0.1
+DCOS_IP='127.0.0.1'
 USERNAME='bootstrapuser'
 PASSWORD='deleteme'
 DEFAULT_USER_PASSWORD='deleteme'
 DEFAULT_USER_SECRET='secret'
 
 #directories
-WORKING_DIR='./'
+WORKING_DIR=os.getcwd()
 DATA_DIR=WORKING_DIR+'/data'
 SRC_DIR=WORKING_DIR+'/src'
-BACKUP_DIR=$WORKING_DIR+'/backup'
+BACKUP_DIR=WORKING_DIR+'/backup'
 
 #data files
 USERS_FILE=DATA_DIR+'/users.json'
@@ -28,27 +30,26 @@ GROUPS_USERS_FILE=DATA_DIR+'/groups_users.json'
 ACLS_FILE=DATA_DIR+'/acls.json'
 ACLS_PERMISSIONS_FILE=DATA_DIR+'/acls_permissions.json'
 
-
-MENU_WIDTH = 50
+MENU_WIDTH = 80
 
 #Mark for outputs and inputs
-mark = '** '
-mark_input = '++ '
+MARK = '** > '
+MARK_INPUT = '++ > '
 
 #Menu messages
 #Login menu
 MSG_APP_TITLE 			=	'Mesosphere DC/OS - IAM Config Backup and Restore Utility'
-MSG_CURRENT_CONFIG 		=	'Current configuration: '
-MSG_DCOS_IP 			=	'DC/OS IP or DNS name: '
-MSG_DCOS_USERNAME 		=	'DC/OS username: '
-MSG_DCOS_PW		 		=	'DC/OS password: '
-MSG_DEFAULT_PW 			=	'Default password for restored users: '
-MSG_IS_OK				=	'Is this configuration ok? (y/n): '
-MSG_ENTER_PARAM_CHANGE	=	'Enter parameter to change: '
-MSG_ENTER_NEW_VALUE		=	'Enter new value: '
-MSG_AVAIL_CONFIGS		=	'Currently available configurations: '
-MSG_ENTER_CONFIG_LOAD	=	'Enter name of the configuration to load: '
-MSG_ENTER_CONFIG_SAVE	=	'Please note that saving under the same name as an existing config will OVERWRITE IT!.\nEnter name of the configuration to load: '
+MSG_CURRENT_CONFIG 		=	'Current configuration '
+MSG_DCOS_IP 			=	'DC/OS IP or DNS name '
+MSG_DCOS_USERNAME 		=	'DC/OS username '
+MSG_DCOS_PW		 		=	'DC/OS password '
+MSG_DEFAULT_PW 			=	'Default password for restored users '
+MSG_IS_OK				=	'Is this configuration ok? (y/n) '
+MSG_ENTER_PARAM_CHANGE	=	'Enter parameter to change '
+MSG_ENTER_NEW_VALUE		=	MARK_INPUT
+MSG_AVAIL_CONFIGS		=	'Currently available configurations '
+MSG_ENTER_CONFIG_LOAD	=	'Enter name of the configuration to load '
+MSG_ENTER_CONFIG_SAVE	=	'Please note that saving under the same name as an existing config will OVERWRITE IT!.\nEnter name of the configuration to save '
 #Main menu
 MSG_AVAIL_CMD			= 'Available commands: '
 MSG_ENTER_CMD			= 'Enter commmand: '
@@ -57,15 +58,17 @@ MSG_LIST_CONFIG			= 'LIST configurations available on disk.'
 MSG_LOAD_CONFIG			= 'LOAD a configuration available on disk.'
 MSG_SAVE_CONFIG			= 'SAVE current local buffer as configuration to disk.'
 MSG_SHOW_CONFIG			= 'SHOW Configuration for this application.'
+MSG_GET_MENU			= 'Commands to GET information from DC/OS'
 MSG_GET_USERS			= 'GET Users from DC/OS cluster.'
 MSG_GET_GROUPS			= 'GET Groups from DC/OS cluster.'
 MSG_GET_ACLS			= 'GET ACLs from DC/OS cluster.'
 MSG_GET_ALL				= 'GET ALL config from DC/OS cluster.'
-MSG_PUT_USERS			= 'PUT Users to DC/OS cluster.'
-MSG_PUT_GROUPS			= 'PUT Groups to DC/OS cluster.'
-MSG_PUT_ACLS			= 'PUT ACLs to DC/OS cluster.'
-MSG_PUT_ALL				= 'PUT ALL config to DC/OS cluster.'
-MSG_CHECK				= 'CHECK current local buffer configuration.'
+MSG_PUT_MENU			= 'Commands to RESTORE information to DC/OS'
+MSG_PUT_USERS			= 'RESTORE Users to DC/OS cluster.'
+MSG_PUT_GROUPS			= 'RESTORE Groups to DC/OS cluster.'
+MSG_PUT_ACLS			= 'RESTORE ACLs to DC/OS cluster.'
+MSG_PUT_ALL				= 'RESTORE ALL config to DC/OS cluster.'
+MSG_CHECK_MENU			= 'CHECK current local buffer configuration.'
 MSG_CHECK_USERS			= 'CHECK Users in local buffer.'
 MSG_CHECK_GROUPS		= 'CHECK Groups in local buffer.'
 MSG_CHECK_ACLS			= 'CHECK ACLs in local buffer.'
@@ -81,8 +84,8 @@ ERROR_INVALID_OPTION 	= 'Invalid input. Please choose a valid option.'
 hotkeys_login = {
 '1' : 'DCOS_IP',
 '2'	: 'DCOS_USERNAME',
-'3' : 'DCOS_PW',
-'4' : 'DEFAULT_PW'
+'3' : 'PASSWORD',
+'4' : 'DEFAULT_USER_PASSWORD'
 }
 
 #hotkeys - main menu
@@ -94,15 +97,15 @@ hotkeys_main = {
 '1' : 'get_users',
 '2' : 'get_groups',
 '3' : 'get_acls',
-'g' : 'full_get',
+'g' : 'get_all',
 '4' : 'put_users',
 '5' : 'put_groups',
 '6' : 'put_acls',
-'p' : 'full_put',
+'p' : 'put_all',
 '7' : 'check_users',
 '8' : 'check_groups',
 '9' : 'check_acls',
-'x' : 'exit'
+'x' : 'exit',
 '~' : 'noop'
 }
 

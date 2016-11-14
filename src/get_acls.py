@@ -17,7 +17,7 @@ import requests
 import json
 import helpers			#helper functions in separate module helpers.py
 
-def get_acls ( string DCOS_IP, string save_path ):
+def get_acls ( DCOS_IP, save_path ):
 
 	"""	Get the list of acls from a DC/OS cluster as a JSON blob.
 	Save the acls to the text file in the save_path provided.
@@ -38,7 +38,7 @@ def get_acls ( string DCOS_IP, string save_path ):
 		log(
 			log_level='INFO',
 			operation='GET',
-			obj_0='ACLs',
+			objects=['ACLs'],
 			indx=0,
 			content=request.status_code
 			)
@@ -46,7 +46,7 @@ def get_acls ( string DCOS_IP, string save_path ):
 		log(
 			log_level='ERROR',
 			operation='GET',
-			obj_0='ACLs',
+			objects=['ACLs'],
 			indx=0,
 			content=error
 			)
@@ -61,14 +61,14 @@ def get_acls ( string DCOS_IP, string save_path ):
 	log(
 		log_level='INFO',
 		operation='GET',
-		obj_0='ACLs',
+		objects=['ACLs'],
 		indx=0,
 		content='* DONE *'
 		)
 
 	return acls
 
-def get_acls_permissions ( string DCOS_IP, string save_path, dict acls ):
+def get_acls_permissions ( DCOS_IP, save_path, acls ):
 	"""
 	Get the list of Permissions for Users and Groups referenced in an ACL.
 	Save the ACLs_permissions to the text file in the save_path provided.
@@ -107,8 +107,7 @@ def get_acls_permissions ( string DCOS_IP, string save_path, dict acls ):
 			log(
 				log_level='INFO',
 				operation='GET',
-				obj_0='ACLs',
-				obj_1='Permissions',
+				objects=['ACLs', 'Permissions'],
 				indx=index,
 				content=request.status_code
 				)				
@@ -116,8 +115,7 @@ def get_acls_permissions ( string DCOS_IP, string save_path, dict acls ):
 			log(
 				log_level='ERROR',
 				operation='GET',
-				obj_0='ACLs',
-				obj_1='Permissions',
+				objects=['ACLs', 'Permissions'],
 				indx=index,
 				content=error
 				)	
@@ -143,10 +141,7 @@ def get_acls_permissions ( string DCOS_IP, string save_path, dict acls ):
 					log(
 						log_level='INFO',
 						operation='GET',
-						obj_0='ACLs',
-						obj_1='Permissions',
-						obj_2='Users',
-						obj_3='Actions',
+						objects=['ACLs', 'Permissions','Users','Actions'],
 						indx=index3,
 						content=request.status_code
 						)				
@@ -154,10 +149,7 @@ def get_acls_permissions ( string DCOS_IP, string save_path, dict acls ):
 					log(
 						log_level='ERROR',
 						operation='GET',
-						obj_0='ACLs',
-						obj_1='Permissions',
-						obj_2='Users',
-						obj_3='Actions',
+						objects=['ACLs', 'Permissions','Users','Actions'],
 						indx=index3,
 						content=error
 						)	
@@ -184,10 +176,7 @@ def get_acls_permissions ( string DCOS_IP, string save_path, dict acls ):
 					log(
 						log_level='INFO',
 						operation='GET',
-						obj_0='ACLs',
-						obj_1='Permissions',
-						obj_2='Groups',
-						obj_3='Actions',
+						objects=['ACLs', 'Permissions','Groups','Actions'],
 						indx=index3,
 						content=request.status_code
 						)		
@@ -195,10 +184,7 @@ def get_acls_permissions ( string DCOS_IP, string save_path, dict acls ):
 					log(
 						log_level='ERROR',
 						operation='GET',
-						obj_0='ACLs',
-						obj_1='Permissions',
-						obj_2='Groups',
-						obj_3='Actions',
+						objects=['ACLs', 'Permissions','Groups','Actions'],
 						indx=index3,
 						content=error
 						)	
@@ -216,8 +202,7 @@ def get_acls_permissions ( string DCOS_IP, string save_path, dict acls ):
 	log(
 		log_level='INFO',
 		operation='GET',
-		obj_0='ACLs',
-		obj_1='Permissions',
+		objects=['ACLs', 'Permissions'],
 		indx=0,
 		content='* DONE *'
 		)

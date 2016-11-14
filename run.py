@@ -21,12 +21,14 @@ import sys
 import os
 import requests
 import json
+
+sys.path.append(os.getcwd()+'/src') #Add the ./src directory to path for importing
 import env 				#environment variables and constants, messages, etc.
 import helpers			#helper functions in separate module helpers.py
 
 if __name__ == "__main__":
 
-	config = get_config( CONFIG_FILE )
+	config = get_config( env.CONFIG_FILE )
 
 	delete_local_buffer( config['DATA_DIR'] )
 
@@ -35,23 +37,23 @@ if __name__ == "__main__":
 	while not ( config_is_ok.lower() == 'y' ):
 
 		display_login_menu( config )
-		config_is_ok = get_input( message=MSG_IS_OK, valid_options= yYnN )
+		config_is_ok = get_input( message=env.MSG_IS_OK, valid_options= env.yYnN )
 		if ( config_is_ok.lower()  == 'n'):
 
-			option = get_input( message=MSG_ENTER_PARAM_CHANGE, valid_options=hotkeys_login.keys() )
-			value = get_input( message=MSG_ENTER_NEW_VALUE ) #valid_options=ANY
+			option = get_input( message=env.MSG_ENTER_PARAM_CHANGE, valid_options=env.hotkeys_login.keys() )
+			value = get_input( message=env.MSG_ENTER_NEW_VALUE ) #valid_options=ANY
 			config[option] = value
 
 	#main menu loop
 	option = '1' 									#initialize to anything different than 'EXIT'
-	while hotkeys_main[option] is not 'EXIT':
+	while env.hotkeys_main[option] is not 'EXIT':
 
-		display_main_menu( config, state )
-		option = get_input( message=MSG_ENTER_CMD, valid_options=hotkeys_main.keys() )
-		message = 'MSG_'+upper( hotkeys_main[ option ] )
+		display_main_menu( config, env.state )
+		option = get_input( message=env.MSG_ENTER_CMD, valid_options=env.hotkeys_main.keys() )
+		message = 'MSG_'+upper( env.hotkeys_main[ option ] )
 		
 		#get the name of the function to be executed from the menu hotkeys
-		func = hotkeys_main.get( option, 'noop' ) #default is noop
+		func = env.hotkeys_main.get( option, 'noop' ) #default is noop
 		
 		#execute the primary function selected with "option" (get_users, get_groups, get_acls)
 		#result will be a dictionary of the users, groups, acls, etc.
@@ -59,14 +61,15 @@ if __name__ == "__main__":
 		
 		#execute secondary function associated with the primary if it exists
 		#(get_users_groups, get_groups_users, get_permissions_actions)
-		if func in secondary_functions.keys():
-			sec_func = secondary_functions.get( func.__name__, 'noop' )
+		if func in env.secondary_functions.keys():
+			sec_func = env.secondary_functions.get( func.__name__, 'noop' )
 			sec_result = sec_func( config['DCOS_IP'], config['DATA_DIR'], func_result )
 
 	#Exit
 	log(
 		log_level='INFO',
 		operation='EXIT',
+		objects=['Program'],
 		indx=0,
 		content='* DONE *'
 		)

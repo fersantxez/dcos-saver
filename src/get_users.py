@@ -18,7 +18,7 @@ import requests
 import json
 import helpers			#helper functions in separate module helpers.py
 
-def get_users ( string DCOS_IP, string save_path ):
+def get_users ( DCOS_IP, save_path ):
 	"""
 	Get the list of users from a DC/OS cluster as a JSON blob.
 	Save the users to the text file in the save_path provided.
@@ -40,7 +40,7 @@ def get_users ( string DCOS_IP, string save_path ):
 		log(
 			log_level='INFO',
 			operation='GET',
-			obj_0='Users',
+			object=['Users'],
 			indx=0,
 			content=request.status_code
 			)
@@ -48,7 +48,7 @@ def get_users ( string DCOS_IP, string save_path ):
 		log(
 			log_level='ERROR',
 			operation='GET',
-			obj_0='Users',
+			objects=['Users'],
 			indx=0,
 			content=error
 			)		
@@ -64,7 +64,7 @@ def get_users ( string DCOS_IP, string save_path ):
 	log(
 		log_level='DEBUG',
 		operation='GET',
-		obj_0='Users',
+		objects=['Users'],
 		indx=0,
 		content=users
 		)	
@@ -72,14 +72,14 @@ def get_users ( string DCOS_IP, string save_path ):
 	log(
 		log_level='INFO',
 		operation='GET',
-		obj_0='Users',
+		objects=['Users'],
 		indx=0,
 		content='* DONE. *'
 		)	
 	return users				
 
 
-def get_users_groups ( string DCOS_IP, string save_path, dict users ):
+def get_users_groups ( DCOS_IP, save_path, users ):
 	"""
 	Get the list of groups that users are members of from a DC/OS cluster as a JSON blob.
 	Save the users_groups to the text file in the save_path provided.
@@ -116,8 +116,7 @@ def get_users_groups ( string DCOS_IP, string save_path, dict users ):
 			log(
 				log_level='INFO',
 				operation='GET',
-				obj_0='Users',
-				obj_1='Groups',
+				objects=['Users', 'Groups'],
 				indx=index,
 				content=request.status_code
 				)	
@@ -125,8 +124,7 @@ def get_users_groups ( string DCOS_IP, string save_path, dict users ):
 			log(
 				log_level='ERROR',
 				operation='GET',
-				obj_0='Users',
-				obj_1='Groups',
+				objects=['Users', 'Groups'],
 				indx=index,
 				content=error
 				)	
@@ -156,8 +154,7 @@ def get_users_groups ( string DCOS_IP, string save_path, dict users ):
 	log(
 		log_level='INFO',
 		operation='GET',
-		obj_0='Users',
-		obj_1='Groups',
+		objects=['Users','Groups'],
 		indx=0,
 		content='* DONE. *'
 		)	
