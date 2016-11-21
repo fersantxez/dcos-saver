@@ -17,55 +17,83 @@ import requests
 import json
 import helpers      #helper functions in separate module helpers.py
 
-#Load configuration if it exists
-#config is stored directly in JSON format in a fixed location
-config_file = os.getcwd()+'/.config.json'
-config = helpers.get_config( config_file )        #returns config as a dictionary
-if len( config ) == 0:
-  sys.stdout.write( '** ERROR: Configuration not found. Please run ./run.sh first' )
-  sys.exit(1)  
+def post_users ( DCOS_IP, load_path ):
+  """ Get the list of Users from the load_path provided as an argument,
+  and post it to a DC/OS cluster available at the DCOS_IP argument.
+  """ 
 
-#check that there's a USERS file created (buffer loaded)
-if not ( os.path.isfile( config['USERS_FILE'] ) ):
-  sys.stdout.write('** ERROR: Buffer is empty. Please LOAD or GET Users before POSTing them.')
-  sys.exit(1)
+  try:  
+    #open the users file and load the LIST of Users from JSON
+    users_file = open( load_path, 'r' )
+    log(
+      log_level='INFO',
+      operation='LOAD',
+      objects=['Users'],
+      indx=0,
+      content='** OK **'
+      )    
+  except IOError as error:
+    log(
+      log_level='ERROR',
+      operation='LOAD',
+      objects=['Users'],
+      indx=0,
+      content=error
+      )
+    return False #return Error if file isn't available
 
-#open the users file and load the LIST of Users from JSON
-users_file = open( config['USERS_FILE'], 'r' )
-#load entire text file and convert to JSON - dictionary
-users = json.loads( users_file.read() )
-users_file.close()
+    #load entire text file and convert to JSON - dictionary
+    users = json.loads( users_file.read() )
+    users_file.close()
 
-#loop through the list of users and
-#PUT /users/{uid}
-for index, user in ( enumerate( users['array'] ) ): 
+  #loop through the list of users and
+  #PUT /users/{uid}
+  for index, user in ( enumerate( users['array'] ) ): 
 
-  uid = user['uid']
+    uid = user['uid']
 
-  #build the request
-  api_endpoint = '/acs/api/v1/users/'+uid
-  url = 'http://'+config['DCOS_IP']+api_endpoint
-  headers = {
-  'Content-type': 'application/json',
-  'Authorization': 'token='+config['TOKEN'],
-  }
-  data = {
-  'description': user['description'],
-  'password': config['DEFAULT_USER_PASSWORD']
-  }
-  #send the request to PUT the new USER
-  try:
-    request = requests.put(
-      url,
-      headers = headers,
-      data = json.dumps( data )
-    )
-    request.raise_for_status()
-    #show progress after request
-    sys.stdout.write( '** INFO: PUT User: {} : {:>20} \r'.format( index, request.status_code ) )
-    sys.stdout.flush() 
-  except requests.exceptions.HTTPError as error:
-    print ('** ERROR: PUT User: {}: {}'.format( uid, error ) ) 
+    #build the request
+    api_endpoint = '/acs/api/v1/users/'+uid
+    url = 'http://'+config['DCOS_IP']+api_endpoint
+    headers = {
+    'Content-type': 'application/json',
+    'Authorization': 'token='+config['TOKEN'],
+    }
+    data = {
+    'description': user['description'],
+    'password': config['DEFAULT_USER_PASSWORD']
+    }
+    #send the request to PUT the new USER
+    try:
+      request = requests.put(
+        url,
+        headers = headers,
+        data = json.dumps( data )
+      )
+      request.raise_for_status()
+      #show progress after request
+      log(
+        log_level='INFO',
+        operation='PUT',
+        objects=['Users'],
+        indx=0,
+        content=request.status_code
+        )
+    except requests.exceptions.HTTPError as error:
+      log(
+        log_level='ERROR',
+        operation='PUT',
+        objects=['Users'],
+        indx=0,
+        content=request.status_code
+        )
 
+    log(
+      log_level='INFO',
+      operation='PUT',
+      objects=['Users'],
+      indx=0,
+      content='* DONE *'
+      )
 
-sys.stdout.write('\n** INFO: PUT Users:                         Done.\n')
+    return True

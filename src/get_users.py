@@ -76,7 +76,7 @@ def get_users ( DCOS_IP, save_path ):
 		indx=0,
 		content='* DONE. *'
 		)	
-	return users				
+	return dict( users )				
 
 
 def get_users_groups ( DCOS_IP, save_path, users ):

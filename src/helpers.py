@@ -43,13 +43,13 @@ def log ( log_level, operation, objects, indx, content ):
 	else:
 		line_end = '\r'
 	#print log message with the right format. Fixed field lengths for justification
-	sys.stdout.write( '{0}{1:<3} {2:<5}: {3:<4} {4:<3}: {5:<20}: {6:>20} {7:>1}'.format(
+	sys.stdout.write( '{0}{1:<3} {2:<5}: {3:<4} {4:<3}: {5:30}: {6:>20} {7:>1}'.format(
 			line_start,		#0
 			env.MARK,			#1
 			log_level,		#2
 			operation,		#3
 			indx,			#4
-			', '.join(str(x) for x in objects),			#5
+			', '.join( str(x) for x in objects ),			#5
 			content,		#6
 			line_end		#7
 			)

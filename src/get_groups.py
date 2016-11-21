@@ -121,7 +121,7 @@ def get_groups_users ( DCOS_IP, save_path, groups ):
 			log(
 				log_level='ERROR',
 				operation='GET',
-				objects=['Groups','Users'],
+				objects=['Groups: '+gid,'Users: '],
 				indx=index,
 				content=error
 				)	
@@ -146,7 +146,7 @@ def get_groups_users ( DCOS_IP, save_path, groups ):
 				log(
 					log_level='INFO',
 					operation='GET',
-					objects=['Groups','Users','Permissions'],
+					objects=[ 'Groups: '+gid,'Users: '+uid,'Permissions: '+membership ],
 					indx=index2,
 					content=request.status_code
 					)	
@@ -154,7 +154,7 @@ def get_groups_users ( DCOS_IP, save_path, groups ):
 				log(
 					log_level='ERROR',
 					operation='GET',
-					objects=['Groups','Users','Permissions'],
+					objects=['Groups: '+gid,'Users: '+uid,'Permissions: '+membership ],
 					indx=index2,
 					content=error
 					)			

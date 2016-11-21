@@ -18,7 +18,6 @@ import json
 import helpers			#helper functions in separate module helpers.py
 
 def get_acls ( DCOS_IP, save_path ):
-
 	"""	Get the list of acls from a DC/OS cluster as a JSON blob.
 	Save the acls to the text file in the save_path provided.
 	Return the list of acls as a dictionary."""	
