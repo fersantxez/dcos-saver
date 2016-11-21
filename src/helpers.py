@@ -153,10 +153,10 @@ def save_config ( config ):
 	name = get_input( message=env.MSG_ENTER_CONFIG_SAVE )
 	if not os.path.exists( env.BACKUP_DIR+'/'+name ):
 		os.makedirs( env.BACKUP_DIR+'/'+name)
-	copy2( env.DATA_DIR+'/'+basename( env.USERS_FILE ), 				env.BACKUP_DIR+'/'+name+'/'+basename( env.USERS_FILE ) )
+	copy2( env.DATA_DIR+'/'+basename( env.USERS_FILE ), 			env.BACKUP_DIR+'/'+name+'/'+basename( env.USERS_FILE ) )
 	copy2( env.DATA_DIR+'/'+basename( env.USERS_GROUPS_FILE ), 		env.BACKUP_DIR+'/'+name+'/'+basename( env.USERS_GROUPS_FILE ) )
 	copy2( env.DATA_DIR+'/'+basename( env.GROUPS_FILE ), 			env.BACKUP_DIR+'/'+name+'/'+basename( env.GROUPS_FILE ) )
-	copy2( env.DATA_DIR+'/'+basename( env.GROUPS_USERS_FILE ),  		env.BACKUP_DIR+'/'+name+'/'+basename( env.GROUPS_USERS_FILE ) )
+	copy2( env.DATA_DIR+'/'+basename( env.GROUPS_USERS_FILE ),  	env.BACKUP_DIR+'/'+name+'/'+basename( env.GROUPS_USERS_FILE ) )
 	copy2( env.DATA_DIR+'/'+basename( env.ACLS_FILE ), 				env.BACKUP_DIR+'/'+name+'/'+basename( env.ACLS_FILE ) )
 	copy2( env.DATA_DIR+'/'+basename( env.ACLS_PERMISSIONS_FILE ),	env.BACKUP_DIR+'/'+name+'/'+basename( env.ACLS_PERMISSIONS_FILE ) )
 
@@ -177,7 +177,7 @@ def delete_local_buffer ( path ) :
 	else:
 		log(
 			log_level='ERROR',
-			operation='DELETE',
+			operation='_DELETE',
 			objects=['Local_buffer'],
 			indx=0,
 			content=env.ERROR_BUFFER_NOT_FOUND

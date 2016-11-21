@@ -113,7 +113,7 @@ def get_groups_users ( DCOS_IP, save_path, groups ):
 			log(
 				log_level='INFO',
 				operation='GET',
-				objects=['Groups','Users'],
+				objects=['Groups: '+gid,'Users: '],
 				indx=index,
 				content=request.status_code
 				)	

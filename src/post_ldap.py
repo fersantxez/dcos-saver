@@ -18,7 +18,8 @@ import json
 import helpers      #helper functions in separate module helpers.py
 
 def post_ldap ( DCOS_IP, load_path ):
-  """ Get the LDAP configuration from the load_path provided as an argument,
+  """ 
+  Get the LDAP configuration from the load_path provided as an argument,
   and post it to a DC/OS cluster available at the DCOS_IP argument.
   """ 
 
