@@ -86,7 +86,7 @@ def get_acls_permissions ( DCOS_IP, save_path, acls ):
 		#append this acl as a dictionary to the list 
 		acls_permissions['array'].append(
 		{
-			'rid' : 		acl['rid'],
+			'rid' : 		helpers.escape( acl['rid'] ),
 			'url' : 		acl['url'],
 			'description' : acl['description'],
 			'users' : 		[],				#initialize users LIST for this acl
@@ -96,7 +96,7 @@ def get_acls_permissions ( DCOS_IP, save_path, acls ):
 
 		#get permissions for this ACL from DC/OS
 		#GET acls/[rid]/permissions
-		api_endpoint = '/acs/api/v1/acls/'+acl['rid']+'/permissions'
+		api_endpoint = '/acs/api/v1/acls/'+helpers.escape( acl['rid'] )+'/permissions'
 		url = 'http://'+config['DCOS_IP']+api_endpoint
 		try:
 			request = requests.get(
@@ -130,7 +130,7 @@ def get_acls_permissions ( DCOS_IP, save_path, acls ):
 			for index3, action in ( enumerate ( user['actions'] ) ):
 				#get action from DC/OS
 				#GET /acls/{rid}/users/{uid}/{action}
-				api_endpoint = '/acs/api/v1/acls/'+acl['rid']+'/users/'+user['uid']+'/'+action['name']
+				api_endpoint = '/acs/api/v1/acls/'+helpers.escape( acl['rid'] )+'/users/'+user['uid']+'/'+action['name']
 				url = 'http://'+config['DCOS_IP']+api_endpoint
 				try:
 					request = requests.get(
@@ -165,7 +165,7 @@ def get_acls_permissions ( DCOS_IP, save_path, acls ):
 			for index3, action in ( enumerate ( group['actions'] ) ):
 				#get action from DC/OS
 				#GET /acls/{rid}/users/{uid}/{action}
-				api_endpoint = '/acs/api/v1/acls/'+acl['rid']+'/groups/'+group['gid']+'/'+action['name']
+				api_endpoint = '/acs/api/v1/acls/'+helpers.escape( acl['rid'] )+'/groups/'+helpers.escape( group['gid'] )+'/'+action['name']
 				url = 'http://'+config['DCOS_IP']+api_endpoint
 				try:
 					request = requests.get(

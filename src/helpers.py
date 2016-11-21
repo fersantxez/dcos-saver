@@ -297,5 +297,12 @@ def noop():
 
 	return True
 
+def escape ( a_string ) :
+	"""
+	Escape characters that create issues for URLs
+	"""
+	escaped = a_string.replace("/", "%252F")
+
+	return escaped
 
 

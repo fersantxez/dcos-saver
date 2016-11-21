@@ -93,7 +93,7 @@ def get_groups_users ( DCOS_IP, save_path, groups ):
 		#append this group as a dictionary to the list 
 		groups_users['array'].append(
 		{
-			'gid' : 		group['gid'],
+			'gid' : 		helpers.escape( group['gid'] ),
 			'url' : 		group['url'],
 			'description' : group['description'],
 			'users' : 		[],				#initialize users LIST for this group
@@ -102,7 +102,7 @@ def get_groups_users ( DCOS_IP, save_path, groups ):
 		)
 
 		#get users for this group from DC/OS
-		api_endpoint = '/acs/api/v1/groups/'+group['gid']+'/users'
+		api_endpoint = '/acs/api/v1/groups/'+helpers.escape( group['gid'] )+'/users'
 		url = 'http://'+DCOS_IP+api_endpoint
 		try:
 			request = requests.get(
@@ -135,7 +135,7 @@ def get_groups_users ( DCOS_IP, save_path, groups ):
 
 			#get permissions for this group from DC/OS
 			#GET groups/[gid]/permissions
-			api_endpoint = '/acs/api/v1/groups/'+group['gid']+'/permissions'
+			api_endpoint = '/acs/api/v1/groups/'+helpers.escape( group['gid'] )+'/permissions'
 			url = 'http://'+config['DCOS_IP']+api_endpoint
 			try:
 				request = requests.get(

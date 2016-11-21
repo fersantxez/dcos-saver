@@ -138,7 +138,7 @@ def get_users_groups ( DCOS_IP, save_path, users ):
 			{
 				'membershipurl' :		membership['membershipurl'],
 				'group' : {
-					'gid' : 			membership['group']['gid'],
+					'gid' : 			helpers.escape( membership['group']['gid'] ),
 					'url' : 			membership['group']['url'],
 					'description' : 	membership['group']['description']
 				}
