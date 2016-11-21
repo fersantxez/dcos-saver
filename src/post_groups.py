@@ -40,7 +40,7 @@ groups_file.close()
 #PUT /groups/{gid}
 for index, group in ( enumerate( groups['array'] ) ): 
 
-	gid = group['gid']
+	gid = helpers.escape( group['gid'] )
 	#build the request
 	api_endpoint = '/acs/api/v1/groups/'+gid
 	url = 'http://'+config['DCOS_IP']+api_endpoint
@@ -81,7 +81,7 @@ groups_users_file.close()
 
 for index, group_user in ( enumerate( groups_users['array'] ) ): 
 	#PUT /groups/{gid}/users/{uid}
-	gid = group_user['gid']	
+	gid = helpers.escape( group_user['gid'] )	
 
 	#array of users for this group_users
 	for index2, user in ( enumerate( group_user['users'] ) ): 

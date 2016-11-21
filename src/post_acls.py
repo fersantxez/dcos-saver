@@ -42,7 +42,7 @@ acls_file.close()
 #PUT /acls/{rid}
 for index, acl in ( enumerate( acls['array'] ) ): 
 
-	rid = acl['rid']
+	rid = helpers.escape( acl['rid'] )
 	#build the request
 	api_endpoint = '/acs/api/v1/acls/'+rid
 	url = 'http://'+config['DCOS_IP']+api_endpoint
@@ -84,7 +84,7 @@ acls_permissions = json.loads( acls_permissions_file.read() )
 acls_permissions_file.close()
 
 for index, acl_permission in ( enumerate( acls_permissions['array'] ) ): 
-	rid = acl_permission['rid']	
+	rid = helpers.escape( acl_permission['rid'] )	
 
 	#array of users for this acl_permission
 	for index2, user in ( enumerate( acl_permission['users'] ) ): 
@@ -94,7 +94,7 @@ for index, acl_permission in ( enumerate( acls_permissions['array'] ) ):
 		#array of actions for this user_acl_permission
 		for index3, action in ( enumerate( user['actions'] ) ): 
 
-			name = action['name']
+			name = helpers.escape( action['name'] )
 			#build the request
 			api_endpoint = '/acs/api/v1/acls/'+rid+'/users/'+uid+'/'+name
 			url = 'http://'+config['DCOS_IP']+api_endpoint
@@ -119,11 +119,11 @@ for index, acl_permission in ( enumerate( acls_permissions['array'] ) ):
 	for index2, group in ( enumerate( acl_permission['groups'] ) ): 
 	#PUT  /acls/{rid}/groups/{gid}/{action}
 
-		gid = group['gid']
+		gid = helpers.escape( group['gid'] )
 		#array of actions for this group_acl_permission
 		for index3, action in ( enumerate( group['actions'] ) ): 
 
-			name = action['name']
+			name = helpers.escape( action['name'] )
 			#build the request
 			api_endpoint = '/acs/api/v1/acls/'+rid+'/groups/'+gid+'/'+name
 			url = 'http://'+config['DCOS_IP']+api_endpoint
