@@ -128,11 +128,11 @@ def load_config ( config ):
 	list_config( config )
 	name = get_input( message=env.MSG_ENTER_CONFIG_LOAD )
 	if os.path.exists( env.BACKUP_DIR+'/'+name ):
-		copy2( env.BACKUP_DIR+'/'+name+'/'+basename( env.USERS_FILE ), 				env.DATA_DIR+'/'+basename( env.USERS_FILE )  )
+		copy2( env.BACKUP_DIR+'/'+name+'/'+basename( env.USERS_FILE ), 			env.DATA_DIR+'/'+basename( env.USERS_FILE )  )
 		copy2( env.BACKUP_DIR+'/'+name+'/'+basename( env.USERS_GROUPS_FILE ), 		env.DATA_DIR+'/'+basename( env.USERS_GROUPS_FILE )  )
-		copy2( env.BACKUP_DIR+'/'+name+'/'+basename( env.GROUPS_FILE ), 			env.DATA_DIR+'/'+basename( env.GROUPS_FILE )  )
+		copy2( env.BACKUP_DIR+'/'+name+'/'+basename( env.GROUPS_FILE ), 		env.DATA_DIR+'/'+basename( env.GROUPS_FILE )  )
 		copy2( env.BACKUP_DIR+'/'+name+'/'+basename( env.GROUPS_USERS_FILE ), 		env.DATA_DIR+'/'+basename( env.GROUPS_USERS_FILE )  )
-		copy2( env.BACKUP_DIR+'/'+name+'/'+basename( env.ACLS_FILE ), 				env.DATA_DIR+'/'+basename( env.ACLS_FILE )  )
+		copy2( env.BACKUP_DIR+'/'+name+'/'+basename( env.ACLS_FILE ), 			env.DATA_DIR+'/'+basename( env.ACLS_FILE )  )
 		copy2( env.BACKUP_DIR+'/'+name+'/'+basename( env.ACLS_PERMISSIONS_FILE ),	env.DATA_DIR+'/'+basename( env.ACLS_PERMISSIONS_FILE )  )
 		return True
 	else:
@@ -153,11 +153,11 @@ def save_config ( config ):
 	name = get_input( message=env.MSG_ENTER_CONFIG_SAVE )
 	if not os.path.exists( env.BACKUP_DIR+'/'+name ):
 		os.makedirs( env.BACKUP_DIR+'/'+name)
-	copy2( env.DATA_DIR+'/'+basename( env.USERS_FILE ), 			env.BACKUP_DIR+'/'+name+'/'+basename( env.USERS_FILE ) )
-	copy2( env.DATA_DIR+'/'+basename( env.USERS_GROUPS_FILE ), 		env.BACKUP_DIR+'/'+name+'/'+basename( env.USERS_GROUPS_FILE ) )
-	copy2( env.DATA_DIR+'/'+basename( env.GROUPS_FILE ), 			env.BACKUP_DIR+'/'+name+'/'+basename( env.GROUPS_FILE ) )
+	copy2( env.DATA_DIR+'/'+basename( env.USERS_FILE ), 		env.BACKUP_DIR+'/'+name+'/'+basename( env.USERS_FILE ) )
+	copy2( env.DATA_DIR+'/'+basename( env.USERS_GROUPS_FILE ), 	env.BACKUP_DIR+'/'+name+'/'+basename( env.USERS_GROUPS_FILE ) )
+	copy2( env.DATA_DIR+'/'+basename( env.GROUPS_FILE ), 		env.BACKUP_DIR+'/'+name+'/'+basename( env.GROUPS_FILE ) )
 	copy2( env.DATA_DIR+'/'+basename( env.GROUPS_USERS_FILE ),  	env.BACKUP_DIR+'/'+name+'/'+basename( env.GROUPS_USERS_FILE ) )
-	copy2( env.DATA_DIR+'/'+basename( env.ACLS_FILE ), 				env.BACKUP_DIR+'/'+name+'/'+basename( env.ACLS_FILE ) )
+	copy2( env.DATA_DIR+'/'+basename( env.ACLS_FILE ), 		env.BACKUP_DIR+'/'+name+'/'+basename( env.ACLS_FILE ) )
 	copy2( env.DATA_DIR+'/'+basename( env.ACLS_PERMISSIONS_FILE ),	env.BACKUP_DIR+'/'+name+'/'+basename( env.ACLS_PERMISSIONS_FILE ) )
 
 	return True
