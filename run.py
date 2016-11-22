@@ -22,9 +22,9 @@ import os
 import requests
 import json
 
-sys.path.append(os.getcwd()+'/src') #Add the ./src directory to path for importing
+sys.path.append(os.getcwd()+'/src') 	#Add the ./src directory to path for importing
 import env 				#environment variables and constants, messages, etc.
-import helpers			#helper functions in separate module helpers.py
+import helpers				#helper functions in separate module helpers.py
 
 if __name__ == "__main__":
 
