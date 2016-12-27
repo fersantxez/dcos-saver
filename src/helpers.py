@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # helpers.py: helper functions for other processes in the project to use
 #
@@ -12,6 +12,7 @@ import json
 import sys
 from shutil import copy2
 from ntpath import basename
+import requests
 import env
 
 def clear_screen():
@@ -43,20 +44,22 @@ def log ( log_level, operation, objects, indx, content ):
 	else:
 		line_end = '\r'
 	#print log message with the right format. Fixed field lengths for justification
-	sys.stdout.write( '{0}{1:<3} {2:<5}: {3:<4} {4:<3}: {5:30}: {6:>20} {7:>1}'.format(
+	#sys.stdout.write( '{0}{1:<3} {2:<5}: {3:<4} {4:<3}: {5:30}: {6:>20} {7:>1}'.format(
+	print( '{0}{1:<3} {2:<5}: {3:<4} {4:<3}: {5}: {6}'.format(
 			line_start,		#0
 			env.MARK,			#1
 			log_level,		#2
 			operation,		#3
 			indx,			#4
 			', '.join( str(x) for x in objects ),			#5
-			content,		#6
-			line_end		#7
-			)
+			content			#6
+			),
+		end=line_end
 		)
 	#return carriage for repeatig line if 'INFO'
 	if ( log_level == 'INFO' ):
-		sys.stdout.flush()
+		print('')
+		#sys.stdout.flush()
 	return True
 
 def get_input ( message, valid_options=[] ):
@@ -82,7 +85,7 @@ def get_input ( message, valid_options=[] ):
 
 def get_config ( config_path ) :
 	"""
-	Get the full program configuration from the file and returns a dictionary with 
+	Get the full program configuration from the file and return a dictionary with 
 	all its parameters. Program configuration is stored in raw JSON so we just need
 	to load it and use standard `json` to parse it into a dictionary.
 	Returns config as a dictionary.
@@ -91,8 +94,8 @@ def get_config ( config_path ) :
 	config_file = open( config_path, 'r' )  	#open the config file for reading
 	read_config = config_file.read()			#read the entire file into a dict with JSON format
 	config_file.close()
-	config = dict( json.loads( read_config ) )		#parse read config as JSON into readable dictionary
-
+	config = dict( json.loads( read_config ) )	#parse read config as JSON into readable dictionary
+	
 	return config
 
 def show_config ( config ) :
@@ -101,11 +104,16 @@ def show_config ( config ) :
 	Program configuration is received as a dictionary.
 	"""
 
-	sys.stdout.write( '{} \n'.format( env.MSG_CURRENT_CONFIG ) )
-	sys.stdout.write( '{} : {} \n'.format( env.MSG_DCOS_IP, config['DCOS_IP'] ) ) 
-	sys.stdout.write( '{} : {} \n'.format( env.MSG_DCOS_USERNAME, config['USERNAME'] ) )
-	sys.stdout.write( '{} : {} \n'.format( env.MSG_DCOS_PW, config['PASSWORD'] ) )
-	sys.stdout.write( '{} : {} \n'.format( env.MSG_DEFAULT_PW, config['DEFAULT_USER_PASSWORD'] ) )
+	#sys.stdout.write( '{} \n'.format( env.MSG_CURRENT_CONFIG ) )
+	print('{0}'.format( env.MSG_CURRENT_CONFIG ) )
+	#sys.stdout.write( '{} : {} \n'.format( env.MSG_DCOS_IP, config['DCOS_IP'] ) )
+	print('{0} : {1}'.format( env.MSG_DCOS_IP, config['DCOS_IP'] ) ) 
+	#sys.stdout.write( '{} : {} \n'.format( env.MSG_DCOS_USERNAME, config['DCOS_USERNAME'] ) )
+	print('{0} : {1}'.format( env.MSG_DCOS_USERNAME, config['DCOS_USERNAME'] ) )
+	#sys.stdout.write( '{} : {} \n'.format( env.MSG_DCOS_PW, config['PASSWORD'] ) )
+	print('{0} : {1}'.format( env.MSG_DCOS_PASSWORD, config['DCOS_PASSWORD'] ) )
+	#sys.stdout.write( '{} : {} \n'.format( env.MSG_DEFAULT_PW, config['DEFAULT_USER_PASSWORD'] ) )
+	print('{0} : {1}'.format( env.MSG_DEFAULT_PASSWORD, config['DEFAULT_USER_PASSWORD'] ) )
 
 	return True
 
@@ -113,7 +121,8 @@ def list_config ( config ):
 	"""
 	List all the DC/OS configurations available on disk to be loaded.
 	"""
-	sys.stdout.write( '{} \n'.format( env.MSG_AVAIL_CONFIGS ) )
+	#sys.stdout.write( '{} \n'.format( env.MSG_AVAIL_CONFIGS ) )
+	print('{0}'.format( env.MSG_AVAIL_CONFIGS ) )
 	for config_dir in os.listdir( env.BACKUP_DIR ): print( config_dir )
 
 	return True
@@ -195,25 +204,36 @@ def menu_line (hotkey='', message='', config_param='', state_param=''):
 	Returns True.
 	"""
 	if not ( hotkey == '' ):
-		sys.stdout.write('{0}'.format( hotkey ) )
+		#sys.stdout.write('{0}'.format( hotkey ) )
+		print( '{0} '.format( hotkey ), end='', flush=False )
+		#sys.stdout.write(' : ')
+		print( '{0} '.format( ':' ), end='', flush=False )
 
 	if ( message == '' ):
-		sys.stdout.write('*'*env.MENU_WIDTH + '\n') #A separation line
+		#sys.stdout.write('*'*env.MENU_WIDTH + '\n') #A separation line
+		print( '*'*env.MENU_WIDTH ) #A separation line
 	else:
-		sys.stdout.write( '{0} {1} {2}'.format( 
-				'*'*int( ( env.MENU_WIDTH-len( message ) )/2 ),
-				message,	
-				'*'*int( ( env.MENU_WIDTH-len( message ) )/2 )
-				)
-			)
+		#sys.stdout.write( '{0} {1} {2}'.format( 
+		#		message,	
+		#		'*'*int( (env.MENU_WIDTH)-( len(message)+len(config_param) ) ),
+		#		'\n'
+		#		)
+		#	)
+		print( '{0}'.format( message, end='' ) 
+			#'*'*int( (env.MENU_WIDTH)-( len(message)+len(config_param) ) ),
+			
+		)
+
 
 	if not (config_param == ''):
-		sys.stdout.write('{0}'.format( config_param ) )
+		#sys.stdout.write('{0}'.format( config_param ) )
+		print( '{0}'.format( config_param ), end='', flush=False  )
 
 	if not (state_param == ''):
-		sys.stdout.write('{0}'.format( state_param ) )
+		#sys.stdout.write('{0}'.format( state_param ) )
+		print( '{0}'.format( state_param ), end='', flush=False  )
 
-	sys.stdout.write('\n')
+	print('')
 
 	return True
 
@@ -235,11 +255,11 @@ def display_login_menu( config ):
 	menu_line()
 	menu_line( hotkey=hk['DCOS_IP'], message=env.MSG_DCOS_IP, config_param=config['DCOS_IP'] )
 	menu_line()
-	menu_line( hotkey=hk['DCOS_USERNAME'], message=env.MSG_DCOS_USERNAME, config_param=config['USERNAME'] )
+	menu_line( hotkey=hk['DCOS_USERNAME'], message=env.MSG_DCOS_USERNAME, config_param=config['DCOS_USERNAME'] )
 	menu_line()	
-	menu_line( hotkey=hk['PASSWORD'], message=env.MSG_DCOS_PW, config_param=config['PASSWORD'] )
+	menu_line( hotkey=hk['DCOS_PASSWORD'], message=env.MSG_DCOS_PASSWORD, config_param=config['DCOS_PASSWORD'] )
 	menu_line()	
-	menu_line( hotkey=hk['DEFAULT_USER_PASSWORD'], message=env.MSG_DEFAULT_PW, config_param=config['DEFAULT_USER_PASSWORD'] )
+	menu_line( hotkey=hk['DEFAULT_USER_PASSWORD'], message=env.MSG_DEFAULT_PASSWORD, config_param=config['DEFAULT_USER_PASSWORD'] )
 	menu_line()	
 
 	return True
@@ -304,5 +324,51 @@ def escape ( a_string ) :
 	escaped = a_string.replace("/", "%252F")
 
 	return escaped
+
+def login_to_cluster ( config ):
+	"""
+	Log into the cluster whose DCOS_IP is specified in 'config' in order to get a valid token, using
+	the username and password in 'config'.
+	"""
+
+	api_endpoint = '/acs/api/v1/auth/login'
+	url = 'http://'+config['DCOS_IP']+api_endpoint
+	headers = {
+		'Content-type': 'application/json'
+	}
+	#data = '{ "uid":"'"config['DCOS_USERNAME']"'", "password":"'"config['DCOS_PASSWORD']"'" }'
+	data = { 
+		"uid":		config['DCOS_USERNAME'],
+		"password":	config['DCOS_PASSWORD']
+		}
+
+	try:
+		request = requests.post(
+			url,
+			data = json.dumps( data ),
+			headers=headers
+			)
+		request.raise_for_status()
+		log(
+			log_level='INFO',
+			operation='GET',
+			objects=[request.json],
+			indx=0,
+			content=request.status_code
+			)
+	except requests.exceptions.HTTPError as error:
+		log(
+			log_level='ERROR',
+			operation='GET',
+			objects=[config],
+			indx=0,
+			content=error
+			)
+		return False
+
+	print('** DEBUG: token response is: {0}'.format( request.json() ) ) 
+	config['TOKEN'] = request.json()['token']
+
+	return True
 
 

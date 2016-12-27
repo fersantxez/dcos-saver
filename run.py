@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # run.py: interactively receive and store the configuration for backup/restore
 #
@@ -23,14 +23,14 @@ import requests
 import json
 
 sys.path.append(os.getcwd()+'/src') 	#Add the ./src directory to path for importing
-import env 				#environment variables and constants, messages, etc.
-import helpers				#helper functions in separate module helpers.py
+from env import *			#environment variables and constants, messages, etc.
+from src.helpers import *				#helper functions in separate module helpers.py
 
 if __name__ == "__main__":
 
 	config = get_config( env.CONFIG_FILE )
 
-	delete_local_buffer( config['DATA_DIR'] )
+	delete_local_buffer( DATA_DIR )
 
 	#login menu loop
 	config_is_ok = 'n'
@@ -42,15 +42,25 @@ if __name__ == "__main__":
 
 			option = get_input( message=env.MSG_ENTER_PARAM_CHANGE, valid_options=env.hotkeys_login.keys() )
 			value = get_input( message=env.MSG_ENTER_NEW_VALUE ) #valid_options=ANY
-			config[option] = value
-
+			config[hotkeys_login[option]] = value
+	#TODO: LOGIN TO CLUSTER USING CREDENTIALS
+	if not login_to_cluster( config ):
+		log(
+			log_level='ERROR',
+			operation='LOGIN',
+			objects=['config'],
+			indx=0,
+			content=''
+			)
+		sys.exit()
+	
 	#main menu loop
 	option = '1' 									#initialize to anything different than 'EXIT'
 	while env.hotkeys_main[option] is not 'EXIT':
 
 		display_main_menu( config, env.state )
 		option = get_input( message=env.MSG_ENTER_CMD, valid_options=env.hotkeys_main.keys() )
-		message = 'MSG_'+upper( env.hotkeys_main[ option ] )
+		message = 'MSG_'+(env.hotkeys_main[ option ]).upper
 		
 		#get the name of the function to be executed from the menu hotkeys
 		func = env.hotkeys_main.get( option, 'noop' ) #default is noop
