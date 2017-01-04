@@ -17,19 +17,23 @@ import sys
 import os
 import requests
 import json
+import env				#environment variables and constants
 import helpers			#helper functions in separate module helpers.py
 
-def get_groups ( DCOS_IP, save_path ):
+def get_groups ( DCOS_IP ):
 
-	"""	Get the list of groups from a DC/OS cluster as a JSON blob.
+	"""	
+	Get the list of groups from a DC/OS cluster as a JSON blob.
 	Save the groups to the text file in the save_path provided.
-	Return the list of groups as a dictionary."""
+	Return the list of groups as a dictionary.
+	"""
 
 	api_endpoint = '/acs/api/v1/groups'
-	url = 'http://'+config['DCOS_IP']+api_endpoint
+	config = helpers.get_config( env.CONFIG_FILE )
+	url = 'http://'+config['DCOS_IP']+api_endpoint	
 	headers = {
 		'Content-type': 'application/json',
-		'Authorization': 'token='+config['TOKEN'],
+		'Authorization': 'token='+config['TOKEN']
 	}
 	try:
 		request = requests.get(
@@ -37,7 +41,7 @@ def get_groups ( DCOS_IP, save_path ):
 			headers=headers,
 			)
 		request.raise_for_status()
-		log(
+		helpers.log(
 			log_level='INFO',
 			operation='GET',
 			objects=['Groups'],
@@ -45,40 +49,31 @@ def get_groups ( DCOS_IP, save_path ):
 			content=request.status_code
 			)
 	except requests.exceptions.HTTPError as error:
-		log(
-			log_level='INFO',
+		helpers.log(
+			log_level='ERROR',
 			operation='GET',
 			objects=['Groups'],
 			indx=0,
-			content=request.status_code
+			content=error
 			)
 
-	#the DC/OS API defines the groupss as a dict with {'array:'[]} structure
-	groups = json.loads( request.json )
-	log(
-		log_level='DEBUG',
-		operation='GET',
-		objects=['Groups'],
-		indx=0,
-		content=users
-		)	
-
+	groups = request.text
 	#save to GROUPS file
-	groups_file = open( save_path, 'w' )
+	groups_file = open( env.GROUPS_FILE, 'w' )
 	#write to file in same raw JSON as obtained from DC/OS
-	groups_file.write( request.text )			
+	groups_file.write( groups )			
 	groups_file.close()					
-	log(
+	helpers.log(
 		log_level='INFO',
 		operation='GET',
 		objects=['Groups'],
 		indx=0,
 		content='* DONE *'
 		)	
+	groups_dict = dict( json.loads( groups ) )
+	return groups_dict
 
-	return groups
-
-def get_groups_users ( DCOS_IP, save_path, groups ):
+def get_groups_users ( DCOS_IP, groups ):
 	"""
 	Get the list of users that are members of a group from a DC/OS cluster as a JSON blob.
 	Save the groups_users to the text file in the save_path provided.
@@ -104,24 +99,29 @@ def get_groups_users ( DCOS_IP, save_path, groups ):
 		#get users for this group from DC/OS
 		api_endpoint = '/acs/api/v1/groups/'+helpers.escape( group['gid'] )+'/users'
 		url = 'http://'+DCOS_IP+api_endpoint
+		config = helpers.get_config( env.CONFIG_FILE )
+		headers = {
+			'Content-type': 'application/json',
+			'Authorization': 'token='+config['TOKEN'],
+		}		
 		try:
 			request = requests.get(
 				url,
 				headers=headers,
 				)
 			request.raise_for_status()
-			log(
+			helpers.log(
 				log_level='INFO',
 				operation='GET',
-				objects=['Groups: '+gid,'Users: '],
+				objects=['Groups: '+group['gid'],'Users '],
 				indx=index,
 				content=request.status_code
 				)	
 		except requests.exceptions.HTTPError as error:
-			log(
+			helpers.log(
 				log_level='ERROR',
 				operation='GET',
-				objects=['Groups: '+gid,'Users: '],
+				objects=['Groups: '+group['gid'],'Users '],
 				indx=index,
 				content=error
 				)	
@@ -137,24 +137,29 @@ def get_groups_users ( DCOS_IP, save_path, groups ):
 			#GET groups/[gid]/permissions
 			api_endpoint = '/acs/api/v1/groups/'+helpers.escape( group['gid'] )+'/permissions'
 			url = 'http://'+config['DCOS_IP']+api_endpoint
+			config = helpers.get_config( env.CONFIG_FILE )
+			headers = {
+				'Content-type': 'application/json',
+				'Authorization': 'token='+config['TOKEN'],
+			}
 			try:
 				request = requests.get(
 					url,
 					headers=headers,
 					)
 				request.raise_for_status()
-				log(
+				helpers.log(
 					log_level='INFO',
 					operation='GET',
-					objects=[ 'Groups: '+gid,'Users: '+uid,'Permissions: '+membership ],
+					objects=[ 'Groups: '+group['gid'],'Permissions'],
 					indx=index2,
 					content=request.status_code
 					)	
 			except requests.exceptions.HTTPError as error:
-				log(
+				helpers.log(
 					log_level='ERROR',
 					operation='GET',
-					objects=['Groups: '+gid,'Users: '+uid,'Permissions: '+membership ],
+					objects=['Groups: '+group['gid'],'Permissions'],
 					indx=index2,
 					content=error
 					)			
@@ -163,15 +168,13 @@ def get_groups_users ( DCOS_IP, save_path, groups ):
 				#get each group membership for this user
 				groups_users['array'][index]['permissions'].append( permission )
 
-	#done.
-
 	#write dictionary as a JSON object to file
 	groups_users_json = json.dumps( groups_users ) 		#convert to JSON
-	groups_users_file = open( save_path, 'w' )
+	groups_users_file = open( env.GROUPS_USERS_FILE, 'w' )
 	groups_users_file.write( groups_users_json )		#write to file in raw JSON
 	groups_users_file.close()									#flush
 
-	log(
+	helpers.log(
 		log_level='INFO',
 		operation='GET',
 		objects=['Groups','Users'],

@@ -28,17 +28,10 @@ def get_users ( DCOS_IP ):
 
 	api_endpoint = '/acs/api/v1/users'
 	url = 'http://'+DCOS_IP+api_endpoint
-	config = helpers.get_config( env.CONFIG_FILE )
-	helpers.log(
-		log_level='DEBUG',
-		operation='GET',
-		objects=['Token'],
-		indx=0,
-		content=config['TOKEN']
-		)		
+	config = helpers.get_config( env.CONFIG_FILE )	
 	headers = {
 		'Content-type': 'application/json',
-		'Authorization': 'token='+config['TOKEN'],
+		'Authorization': 'token='+config['TOKEN']
 	}
 	try:
 		request = requests.get(
@@ -69,14 +62,6 @@ def get_users ( DCOS_IP ):
 	users_file.write( users )			
 	users_file.close()	
 	helpers.log(
-		log_level='DEBUG',
-		operation='GET',
-		objects=['Users'],
-		indx=0,
-		content=users
-		)	
-
-	helpers.log(
 		log_level='INFO',
 		operation='GET',
 		objects=['Users'],
@@ -102,18 +87,20 @@ def get_users_groups ( DCOS_IP, users ):
 		#append this user as a dictionary to the list 
 		users_groups['array'].append(
 		{
-			'uid' : 		user['uid'],
+			'uid' : 		helpers.escape( user['uid'] ),
 			'url' : 		user['url'],
 			'description' : user['description'],
 			'is_remote' : 	user['is_remote'],
 			'is_service' : 	user['is_service'],
 			#'public_key':	user['public_key'],
 			#group memberships is a list, with each member being a dictionary
-			'groups' : 		[]				#initialize groups LIST for this user
+			'groups' : 		[],			#initialize groups LIST for this user
+			'permissions' :	[]			#initialize permission LIST for this user	
 		}
 		)
+
 		#get groups for this user from DC/OS
-		api_endpoint = '/acs/api/v1/users/'+user['uid']+'/groups'
+		api_endpoint = '/acs/api/v1/users/'+helpers.escape( user['uid'] )+'/groups'
 		url = 'http://'+DCOS_IP+api_endpoint
 		config = helpers.get_config( env.CONFIG_FILE )
 		headers = {
@@ -129,7 +116,7 @@ def get_users_groups ( DCOS_IP, users ):
 			helpers.log(
 				log_level='INFO',
 				operation='GET',
-				objects=['Users', 'Groups'],
+				objects=['Users: '+user['uid'], 'Groups'],
 				indx=index,
 				content=request.status_code
 				)	
@@ -137,7 +124,7 @@ def get_users_groups ( DCOS_IP, users ):
 			helpers.log(
 				log_level='ERROR',
 				operation='GET',
-				objects=['Users', 'Groups'],
+				objects=['Users:'+user['uid'], 'Groups'],
 				indx=index,
 				content=error
 				)	
@@ -157,6 +144,42 @@ def get_users_groups ( DCOS_IP, users ):
 				}
 			}
 			)
+
+			#TODO
+			#get permissions for this user from DC/OS????
+			#GET users/[uid]/permissions
+			api_endpoint = '/acs/api/v1/users/'+helpers.escape( user['uid'] )+'/permissions'
+			url = 'http://'+config['DCOS_IP']+api_endpoint
+			config = helpers.get_config( env.CONFIG_FILE )
+			headers = {
+				'Content-type': 'application/json',
+				'Authorization': 'token='+config['TOKEN'],
+			}
+			try:
+				request = requests.get(
+					url,
+					headers=headers,
+					)
+				request.raise_for_status()
+				helpers.log(
+					log_level='INFO',
+					operation='GET',
+					objects=[ 'Users: '+user['uid'],'Permissions'],
+					indx=index2,
+					content=request.status_code
+					)	
+			except requests.exceptions.HTTPError as error:
+				helpers.log(
+					log_level='ERROR',
+					operation='GET',
+					objects=['Users: '+user['uid'],'Permissions'],
+					indx=index2,
+					content=error
+					)			
+			permissions = request.json() 	#get memberships from the JSON	
+			for index2, permission in ( enumerate( memberships['array'] ) ):
+				#get each group membership for this user
+				users_groups['array'][index]['permissions'].append( permission )
 
 	#write dictionary as a JSON object to file
 	users_groups_json = json.dumps( users_groups ) 		#convert to JSON
