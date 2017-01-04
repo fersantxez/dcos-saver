@@ -18,30 +18,30 @@ import json
 import helpers      #helper functions in separate module helpers.py
 
 def post_groups ( DCOS_IP, load_path ):
- 	""" 
- 	Get the Group information from the load_path provided as an argument,
- 	and post it to a DC/OS cluster available at the DCOS_IP argument.
- 	"""
+	""" 
+	Get the Group information from the load_path provided as an argument,
+	and post it to a DC/OS cluster available at the DCOS_IP argument.
+	"""
 
- 	try:  	
+	try:  	
 		#open the GROUPS file and load the LIST of groups from JSON
 		groups_file = open( load_path, 'r' )
-    	log(
-      		log_level='INFO',
-      		operation='LOAD',
-      		objects=['Groups'],
-      		indx=0,
-      		content='** OK **'
-      		)
-  	except IOError as error:
-    	log(
-      		log_level='ERROR',
-     		operation='LOAD',
-     		objects=['Groups'],
-     		indx=0,
-     		content=error
-     		)
-     	return False
+		log(
+			log_level='INFO',
+			operation='LOAD',
+			objects=['Groups'],
+			indx=0,
+			content='** OK **'
+			)
+	except IOError as error:
+		log(
+			log_level='ERROR',
+			operation='LOAD',
+			objects=['Groups'],
+			indx=0,
+			content=error
+			)
+		return False
 
 	#load entire text file and convert to JSON - dictionary
 	groups = json.loads( groups_file.read() )
@@ -66,55 +66,55 @@ def post_groups ( DCOS_IP, load_path ):
 		try:
 			request = requests.put(
 			url,
-		 	data = json.dumps( data ),
-		 	headers = headers
+			data = json.dumps( data ),
+			headers = headers
 			)
 			request.raise_for_status()
 			#show progress after request
-    		log(
-    			log_level='INFO',
-    			operation='PUT',
-    			objects=['Groups: '+gid],
-    			indx=0,
-    			content=request.status_code
-    			)
+			log(
+				log_level='INFO',
+				operation='PUT',
+				objects=['Groups: '+gid],
+				indx=0,
+				content=request.status_code
+				)
 		except requests.exceptions.HTTPError as error:
-    		log(
-    			log_level='ERROR',
-    			operation='PUT',
-    			objects=['Groups: '+gid],
-    			indx=0,
-    			content=request.status_code
-    			)
+			log(
+				log_level='ERROR',
+				operation='PUT',
+				objects=['Groups: '+gid],
+				indx=0,
+				content=request.status_code
+				)
 
-    return True
+	return True
 	
 
 def post_groups_users( DCOS_IP, load_path ):
 	""" 
- 	Get the list of groups_users from the load_path provided as an argument,
- 	and post it to a DC/OS cluster available at the DCOS_IP argument.
- 	"""
- 	
- 	try:  	
+	Get the list of groups_users from the load_path provided as an argument,
+	and post it to a DC/OS cluster available at the DCOS_IP argument.
+	"""
+
+	try:  	
 		#open the GROUPS file and load the LIST of groups from JSON
 		groups_file = open( load_path, 'r' )
-    	log(
-      		log_level='INFO',
-      		operation='LOAD',
-      		objects=['Groups', 'Users'],
-      		indx=0,
-      		content='** OK **'
-      		)
-  	except IOError as error:
-    	log(
-      		log_level='ERROR',
-     		operation='LOAD',
-     		objects=['Groups', 'Users'],
-     		indx=0,
-     		content=error
-     		)
-     	return False
+		log(
+			log_level='INFO',
+			operation='LOAD',
+			objects=['Groups', 'Users'],
+			indx=0,
+			content='** OK **'
+			)
+	except IOError as error:
+		log(
+			log_level='ERROR',
+			operation='LOAD',
+			objects=['Groups', 'Users'],
+			indx=0,
+			content=error
+			)
+		return False
 
 	#load entire text file and convert to JSON - dictionary
 	groups_users = json.loads( groups_users_file.read() )

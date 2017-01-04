@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # env.py: environment variables for other processes in the project to use
 #
@@ -11,8 +11,8 @@ CONFIG_FILE=os.getcwd()+'/.config.json'
 
 #Configurable default values
 DCOS_IP='127.0.0.1'
-USERNAME='bootstrapuser'
-PASSWORD='deleteme'
+DCOS_USERNAME='bootstrapuser'
+DCOS_PASSWORD='deleteme'
 DEFAULT_USER_PASSWORD='deleteme'
 DEFAULT_USER_SECRET='secret'
 
@@ -39,11 +39,13 @@ MARK_INPUT = '++ > '
 #Menu messages
 #Login menu
 MSG_APP_TITLE 			=	'Mesosphere DC/OS - IAM Config Backup and Restore Utility'
+MSG_NO_CONFIG			=	'Program configuration not found. This is normal on a first run. A new configuration will be generated.'
 MSG_CURRENT_CONFIG 		=	'Current configuration'
 MSG_DCOS_IP 			=	'DC/OS IP or DNS name'
 MSG_DCOS_USERNAME 		=	'DC/OS username'
 MSG_DCOS_PASSWORD 		=	'DC/OS password'
 MSG_DEFAULT_PASSWORD	=	'Default password for restored users'
+MSG_TOKEN				=	'Current authentication token'
 MSG_IS_OK				=	'Is this configuration ok? (y/n)'
 MSG_ENTER_PARAM_CHANGE	=	'Enter parameter to change'
 MSG_ENTER_NEW_VALUE		=	MARK_INPUT
@@ -90,9 +92,9 @@ hotkeys_login = {
 
 #hotkeys - main menu
 hotkeys_main = {
-'d' : 'list_config',
-'l'	: 'load_config',
-'s'	: 'save_config',
+'d' : 'list_configs',
+'l'	: 'load_configs',
+'s'	: 'save_configs',
 '0' : 'show_config',
 '1' : 'get_users',
 '2' : 'get_groups',
@@ -113,7 +115,8 @@ hotkeys_main = {
 secondary_functions = {
 'get_users'		:'get_users_groups',
 'get_groups'	:'get_groups_users',
-'get_acls'		:'get_acls_permissions' 	
+'get_acls'		:'get_acls_permissions',
+'noop'			:'noop'	
 }
 
 # y/n input options

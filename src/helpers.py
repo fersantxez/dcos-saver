@@ -13,7 +13,16 @@ import sys
 from shutil import copy2
 from ntpath import basename
 import requests
+#sub-modules
 import env
+from get_users import *
+from get_groups import *
+from get_acls import *
+from get_ldap import *
+from post_users import *
+from post_groups import *
+from post_acls import *
+from post_ldap import *
 
 def clear_screen():
 	"""
@@ -83,6 +92,46 @@ def get_input ( message, valid_options=[] ):
 				content=env.ERROR_INVALID_OPTION
 				)
 
+def create_config ( config_path ) :
+	"""
+	Create a new full program configuration from defaults and return a dictionary with 
+	all its parameters. Program configuration is stored in raw JSON so we just need
+	to load it from the defaults in "env" and use standard `json` to parse it into a dictionary.
+	Returns config as a dictionary.
+	"""
+
+	if os.path.exists ( config_path ):
+		log(
+			log_level='ERROR',
+			operation='CREATE',
+			objects=['Config'],
+			indx=0,
+			content=config_path+' exists.'
+			)
+		return False
+	#create a config dictionary and add the values in "env"
+	config={
+		'DCOS_IP': env.DCOS_IP, 
+		'DCOS_USERNAME': env.DCOS_USERNAME, 
+		'DCOS_PASSWORD': env.DCOS_PASSWORD, 
+		'DEFAULT_USER_PASSWORD': env.DEFAULT_USER_PASSWORD, 
+		'DEFAULT_USER_SECRET': env.DEFAULT_USER_SECRET, 
+		'WORKING_DIR': env.WORKING_DIR, 
+		'CONFIG_FILE': env.CONFIG_FILE, 
+		'USERS_FILE': env.USERS_FILE, 
+		'USERS_GROUPS_FILE': env.USERS_GROUPS_FILE, 
+		'GROUPS_FILE': env.GROUPS_FILE, 
+		'GROUPS_USERS_FILE': env.GROUPS_USERS_FILE, 
+		'ACLS_FILE': env.ACLS_FILE, 
+		'ACLS_PERMISSIONS_FILE': env.ACLS_PERMISSIONS_FILE, 
+		'TOKEN': ''
+	}
+	config_file = open( config_path, 'w' )  	#open the config file for writing
+	config_file.write( json.dumps( config ) )			#read the entire file into a dict with JSON format
+	config_file.close()
+	
+	return config
+
 def get_config ( config_path ) :
 	"""
 	Get the full program configuration from the file and return a dictionary with 
@@ -91,6 +140,15 @@ def get_config ( config_path ) :
 	Returns config as a dictionary.
 	"""
 
+	if not os.path.exists ( config_path ):
+		log(
+			log_level='ERROR',
+			operation='LOAD',
+			objects=['Config'],
+			indx=0,
+			content=config_path
+			)
+		return False
 	config_file = open( config_path, 'r' )  	#open the config file for reading
 	read_config = config_file.read()			#read the entire file into a dict with JSON format
 	config_file.close()
@@ -103,36 +161,55 @@ def show_config ( config ) :
 	Show the full program configuration from the file.
 	Program configuration is received as a dictionary.
 	"""
-
-	#sys.stdout.write( '{} \n'.format( env.MSG_CURRENT_CONFIG ) )
 	print('{0}'.format( env.MSG_CURRENT_CONFIG ) )
-	#sys.stdout.write( '{} : {} \n'.format( env.MSG_DCOS_IP, config['DCOS_IP'] ) )
 	print('{0} : {1}'.format( env.MSG_DCOS_IP, config['DCOS_IP'] ) ) 
-	#sys.stdout.write( '{} : {} \n'.format( env.MSG_DCOS_USERNAME, config['DCOS_USERNAME'] ) )
 	print('{0} : {1}'.format( env.MSG_DCOS_USERNAME, config['DCOS_USERNAME'] ) )
-	#sys.stdout.write( '{} : {} \n'.format( env.MSG_DCOS_PW, config['PASSWORD'] ) )
 	print('{0} : {1}'.format( env.MSG_DCOS_PASSWORD, config['DCOS_PASSWORD'] ) )
-	#sys.stdout.write( '{} : {} \n'.format( env.MSG_DEFAULT_PW, config['DEFAULT_USER_PASSWORD'] ) )
 	print('{0} : {1}'.format( env.MSG_DEFAULT_PASSWORD, config['DEFAULT_USER_PASSWORD'] ) )
+	print('{0} : {1}'.format( env.MSG_TOKEN, config['TOKEN'] ) )	
 
 	return True
 
-def list_config ( config ):
+def update_config ( config_path, config ) :
+	"""
+	Updates the configuration saved on disk with the values passed on as argument.
+	"""
+
+	if not os.path.exists ( config_path ):
+		log(
+			log_level='ERROR',
+			operation='_UPDATE',
+			objects=['Config'],
+			indx=0,
+			content=config_path
+			)
+		return False
+	#create a config dictionary and add the values in "env"
+	old_config = get_config( config_path )
+	old_config.update( config )
+	config_file = open( config_path, 'w' )  	#open the config file for writing
+	config_file.write( json.dumps( config ) )			#read the entire file into a dict with JSON format
+	config_file.close()
+	
+	return config
+
+
+def list_configs ( config ):
 	"""
 	List all the DC/OS configurations available on disk to be loaded.
 	"""
-	#sys.stdout.write( '{} \n'.format( env.MSG_AVAIL_CONFIGS ) )
 	print('{0}'.format( env.MSG_AVAIL_CONFIGS ) )
 	for config_dir in os.listdir( env.BACKUP_DIR ): print( config_dir )
 
 	return True
 
-def load_config ( config ):
+def load_configs ( config ):
 	"""
 	Load a DC/OS configuration from disk into local buffer. If the local buffer directory does not exist, create it.
 	"""
 
-	if not os.path.exists( env.DATA_DIR ):
+	#create the DATA_DIR if it doesn't exist yet
+	if not os.path.isdir( env.DATA_DIR ):
 		os.makedirs( env.DATA_DIR )
 	list_config( config )
 	name = get_input( message=env.MSG_ENTER_CONFIG_LOAD )
@@ -154,7 +231,7 @@ def load_config ( config ):
 			)
 		return False
 
-def save_config ( config ):
+def save_configs ( config ):
 	"""
 	Save the running DC/OS configuration to disk from local buffer.
 	"""
@@ -176,7 +253,8 @@ def delete_local_buffer ( path ) :
 	"""
 	Delete the local buffer that stores the temporary configuration.
 	"""
-	if os.path.exists( path ):
+	#check whether the directory exists
+	if os.path.isdir( path ):
 		for root, dirs, files in os.walk( path, topdown=False ):
 			for name in files:
 				os.remove( os.path.join( root, name ) )
@@ -191,6 +269,24 @@ def delete_local_buffer ( path ) :
 			indx=0,
 			content=env.ERROR_BUFFER_NOT_FOUND
 			)
+
+	return True
+
+def create_new_local_buffer ( path ) :
+	"""
+	Create a brand new local buffer that stores the temporary configuration.
+	"""
+	#check whether the buffer directory exists, delete if so.
+	if os.path.isdir( path ):
+		for root, dirs, files in os.walk( path, topdown=False ):
+			for name in files:
+				os.remove( os.path.join( root, name ) )
+			for name in dirs:
+				os.rmdir( os.path.join( root, name ) )
+		os.rmdir( path )
+
+	#create a new local buffer
+	os.mkdir( path )
 
 	return True
 
@@ -281,9 +377,9 @@ def display_main_menu( config, state ):
 	menu_line( message=env.MSG_APP_TITLE )
 	menu_line()
 	menu_line( message=env.MSG_AVAIL_CMD )
-	menu_line( hotkey=hk['list_config'], message=env.MSG_LIST_CONFIG )
-	menu_line( hotkey=hk['load_config'], message=env.MSG_LOAD_CONFIG )
-	menu_line( hotkey=hk['save_config'], message=env.MSG_SAVE_CONFIG )
+	menu_line( hotkey=hk['list_configs'], message=env.MSG_LIST_CONFIG )
+	menu_line( hotkey=hk['load_configs'], message=env.MSG_LOAD_CONFIG )
+	menu_line( hotkey=hk['save_configs'], message=env.MSG_SAVE_CONFIG )
 	menu_line( hotkey=hk['show_config'], message=env.MSG_SHOW_CONFIG )	
 	menu_line()
 	menu_line( message=env.MSG_GET_MENU )
@@ -327,8 +423,7 @@ def escape ( a_string ) :
 
 def login_to_cluster ( config ):
 	"""
-	Log into the cluster whose DCOS_IP is specified in 'config' in order to get a valid token, using
-	the username and password in 'config'.
+	Log into the cluster whose DCOS_IP is specified in 'config' in order to get a valid token, using the username and password in 'config'. Also save the updated token to the config file.
 	"""
 
 	api_endpoint = '/acs/api/v1/auth/login'
@@ -366,9 +461,28 @@ def login_to_cluster ( config ):
 			)
 		return False
 
-	print('** DEBUG: token response is: {0}'.format( request.json() ) ) 
+	#update the configuration with the newly acquired Token
 	config['TOKEN'] = request.json()['token']
+	update_config( env.CONFIG_FILE, config )
 
 	return True
+
+def exit( DCOS_IP ):
+	"""
+	Placeholder for operations that need to be done on exit.
+	"""
+
+	delete_local_buffer( env.DATA_DIR )
+	#Exit
+	log(
+		log_level='INFO',
+		operation='EXIT',
+		objects=['Program'],
+		indx=0,
+		content='* DONE *'
+		)
+	sys.exit(1)
+
+	return None
 
 

@@ -16,17 +16,26 @@ import sys
 import os
 import requests
 import json
+import env				#environment variables and constants
 import helpers			#helper functions in separate module helpers.py
 
-def get_users ( DCOS_IP, save_path ):
+def get_users ( DCOS_IP ):
 	"""
 	Get the list of users from a DC/OS cluster as a JSON blob.
 	Save the users to the text file in the save_path provided.
-	Return the list of users as a dictionary.
+	Return users as a dictionary.
 	"""
 
 	api_endpoint = '/acs/api/v1/users'
 	url = 'http://'+DCOS_IP+api_endpoint
+	config = helpers.get_config( env.CONFIG_FILE )
+	helpers.log(
+		log_level='DEBUG',
+		operation='GET',
+		objects=['Token'],
+		indx=0,
+		content=config['TOKEN']
+		)		
 	headers = {
 		'Content-type': 'application/json',
 		'Authorization': 'token='+config['TOKEN'],
@@ -37,15 +46,15 @@ def get_users ( DCOS_IP, save_path ):
 			headers=headers,
 			)
 		request.raise_for_status()
-		log(
+		helpers.log(
 			log_level='INFO',
 			operation='GET',
-			object=['Users'],
+			objects=['Users'],
 			indx=0,
 			content=request.status_code
 			)
 	except requests.exceptions.HTTPError as error:
-		log(
+		helpers.log(
 			log_level='ERROR',
 			operation='GET',
 			objects=['Users'],
@@ -53,15 +62,13 @@ def get_users ( DCOS_IP, save_path ):
 			content=error
 			)		
 
+	users = request.text
 	#save to USERS file
-	users_file = open( save_path, 'w' )
+	users_file = open( env.USERS_FILE, 'w' )
 	#write to file in same raw JSON as obtained from DC/OS
-	users_file.write( request.text )			
+	users_file.write( users )			
 	users_file.close()	
-	
-	#the DC/OS API defines the users as a dict with {'array:'[]} structure
-	users = json.loads( request.json )
-	log(
+	helpers.log(
 		log_level='DEBUG',
 		operation='GET',
 		objects=['Users'],
@@ -69,17 +76,18 @@ def get_users ( DCOS_IP, save_path ):
 		content=users
 		)	
 
-	log(
+	helpers.log(
 		log_level='INFO',
 		operation='GET',
 		objects=['Users'],
 		indx=0,
 		content='* DONE. *'
-		)	
-	return dict( users )				
+		)
+	users_dict = dict( json.loads(users) )
+	return users_dict				
 
 
-def get_users_groups ( DCOS_IP, save_path, users ):
+def get_users_groups ( DCOS_IP, users ):
 	"""
 	Get the list of groups that users are members of from a DC/OS cluster as a JSON blob.
 	Save the users_groups to the text file in the save_path provided.
@@ -107,13 +115,18 @@ def get_users_groups ( DCOS_IP, save_path, users ):
 		#get groups for this user from DC/OS
 		api_endpoint = '/acs/api/v1/users/'+user['uid']+'/groups'
 		url = 'http://'+DCOS_IP+api_endpoint
+		config = helpers.get_config( env.CONFIG_FILE )
+		headers = {
+			'Content-type': 'application/json',
+			'Authorization': 'token='+config['TOKEN'],
+		}
 		try:
 			request = requests.get(
 				url,
 				headers=headers,
 				)
 			request.raise_for_status()
-			log(
+			helpers.log(
 				log_level='INFO',
 				operation='GET',
 				objects=['Users', 'Groups'],
@@ -121,7 +134,7 @@ def get_users_groups ( DCOS_IP, save_path, users ):
 				content=request.status_code
 				)	
 		except requests.exceptions.HTTPError as error:
-			log(
+			helpers.log(
 				log_level='ERROR',
 				operation='GET',
 				objects=['Users', 'Groups'],
@@ -147,11 +160,11 @@ def get_users_groups ( DCOS_IP, save_path, users ):
 
 	#write dictionary as a JSON object to file
 	users_groups_json = json.dumps( users_groups ) 		#convert to JSON
-	users_groups_file = open( save_path, 'w' )
+	users_groups_file = open( env.USERS_GROUPS_FILE, 'w' )
 	users_groups_file.write( users_groups_json )		#write to file in raw JSON
 	users_groups_file.close()									#flush
 
-	log(
+	helpers.log(
 		log_level='INFO',
 		operation='GET',
 		objects=['Users','Groups'],

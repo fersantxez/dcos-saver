@@ -20,30 +20,30 @@ import json
 import helpers      #helper functions in separate module helpers.py
 
 def post_acls ( DCOS_IP, load_path ):
- 	""" 
- 	Get the ACL information from the load_path provided as an argument,
- 	and post it to a DC/OS cluster available at the DCOS_IP argument.
- 	"""	
-
-  	try:  	
+	"""
+	Get the ACL information from the load_path provided as an argument,
+	and post it to a DC/OS cluster available at the DCOS_IP argument.
+	"""	
+	
+	try:  	
 		#open the ACLS file and load the LIST of acls from JSON
 		acls_file = open( load_path, 'r' )
-    	log(
-      		log_level='INFO',
-      		operation='LOAD',
-      		objects=['ACLs'],
-      		indx=0,
-      		content='** OK **'
-      		)
-  	except IOError as error:
-    	log(
-      		log_level='ERROR',
-     		operation='LOAD',
-     		objects=['ACLs'],
-     		indx=0,
-     		content=error
-     		)
-     	return False
+		log(
+			log_level='INFO',
+			operation='LOAD',
+			objects=['ACLs'],
+			indx=0,
+			content='** OK **'
+			)
+	except IOError as error:
+		log(
+			log_level='ERROR',
+			operation='LOAD',
+			objects=['ACLs'],
+			indx=0,
+			content=error
+			)
+		return False
 
 	#load entire text file and convert to JSON - dictionary
 	acls = json.loads( acls_file.read() )
@@ -73,29 +73,29 @@ def post_acls ( DCOS_IP, load_path ):
 			)
 			request.raise_for_status()
 			#show progress after request
-    		log(
-    			log_level='INFO',
-    			operation='PUT',
-    			objects=['ACLs: '+rid],
-    			indx=0,
-    			content=request.status_code
-    			)
+			log(
+				log_level='INFO',
+				operation='PUT',
+				objects=['ACLs: '+rid],
+				indx=0,
+				content=request.status_code
+				)
 		except requests.exceptions.HTTPError as error:
-    		log(
-    			log_level='ERROR',
-    			operation='PUT',
-    			objects=['ACLs: '+rid],
-    			indx=0,
-    			content=request.status_code
-    			)
-
-    return True
+			log(
+				log_level='ERROR',
+				operation='PUT',
+				objects=['ACLs: '+rid],
+				indx=0,
+				content=request.status_code
+				)
+	
+	return True
 
 def post_acls_permissions( DCOS_IP, load_path ):
-	""" 
- 	Get the list of acls_permissions from the load_path provided as an argument,
- 	and post it to a DC/OS cluster available at the DCOS_IP argument.
- 	"""
+	"""
+	Get the list of acls_permissions from the load_path provided as an argument,
+	and post it to a DC/OS cluster available at the DCOS_IP argument.
+	"""
 	#loop through the list of ACL permission rules and create the ACLS in the system
 	#/acls/{rid}/groups/{gid}/{action}
 	#/acls/{rid}/users/{uid}/{action}
@@ -103,22 +103,22 @@ def post_acls_permissions( DCOS_IP, load_path ):
 	try:  	
 	#open the GROUPS file and load the LIST of groups from JSON
 		acls_permissions_file = open( load_path, 'r' )
-    	log(
-      		log_level='INFO',
-      		operation='LOAD',
-      		objects=['ACLs', 'Permissions'],
-      		indx=0,
-      		content='** OK **'
-      		)
-  	except IOError as error:
-    	log(
-      		log_level='ERROR',
-     		operation='LOAD',
-     		objects=['ACLs', 'Permissions'],
-     		indx=0,
-     		content=error
-     		)
-     	return False
+		log(
+			log_level='INFO',
+			operation='LOAD',
+			objects=['ACLs', 'Permissions'],
+			indx=0,
+			content='** OK **'
+			)
+	except IOError as error:
+		log(
+			log_level='ERROR',
+			operation='LOAD',
+			objects=['ACLs', 'Permissions'],
+			indx=0,
+			content=error
+			)
+		return False
 
 	#load entire text file and convert to JSON - dictionary
 	acls_permissions = json.loads( acls_permissions_file.read() )
