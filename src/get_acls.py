@@ -15,14 +15,18 @@ import sys
 import os
 import requests
 import json
+import env				#environment variables and constants
 import helpers			#helper functions in separate module helpers.py
 
-def get_acls ( DCOS_IP, save_path ):
-	"""	Get the list of acls from a DC/OS cluster as a JSON blob.
+def get_acls ( DCOS_IP ):
+	"""	
+	Get the list of acls from a DC/OS cluster as a JSON blob.
 	Save the acls to the text file in the save_path provided.
-	Return the list of acls as a dictionary."""	
+	Return the list of acls as a dictionary.
+	"""	
 
 	api_endpoint = '/acs/api/v1/acls'
+	config = helpers.get_config( env.CONFIG_FILE )
 	url = 'http://'+config['DCOS_IP']+api_endpoint
 	headers = {
 		'Content-type': 'application/json',
@@ -34,7 +38,7 @@ def get_acls ( DCOS_IP, save_path ):
 			headers=headers,
 			)
 		request.raise_for_status()
-		log(
+		helpers.log(
 			log_level='INFO',
 			operation='GET',
 			objects=['ACLs'],
@@ -42,7 +46,7 @@ def get_acls ( DCOS_IP, save_path ):
 			content=request.status_code
 			)
 	except requests.exceptions.HTTPError as error:
-		log(
+		helpers.log(
 			log_level='ERROR',
 			operation='GET',
 			objects=['ACLs'],
@@ -50,14 +54,12 @@ def get_acls ( DCOS_IP, save_path ):
 			content=error
 			)
 
-	acls = request.text	#raw text form requests, in JSON from DC/OS
-
+	acls = request.text
 	#save to ACLs file
-	acls_file = open( save_path, 'w' )
+	acls_file = open( env.ACLS_FILE, 'w' )
 	acls_file.write( acls )			
-	#write to file in same raw JSON as obtained from DC/OS
 	acls_file.close()					
-	log(
+	helpers.log(
 		log_level='INFO',
 		operation='GET',
 		objects=['ACLs'],
@@ -65,9 +67,11 @@ def get_acls ( DCOS_IP, save_path ):
 		content='* DONE *'
 		)
 
-	return acls
+	acls_dict = dict( json.loads( acls ) )
 
-def get_acls_permissions ( DCOS_IP, save_path, acls ):
+	return acls_dict
+
+def get_acls_permissions ( DCOS_IP, acls ):
 	"""
 	Get the list of Permissions for Users and Groups referenced in an ACL.
 	Save the ACLs_permissions to the text file in the save_path provided.
@@ -96,25 +100,30 @@ def get_acls_permissions ( DCOS_IP, save_path, acls ):
 		#get permissions for this ACL from DC/OS
 		#GET acls/[rid]/permissions
 		api_endpoint = '/acs/api/v1/acls/'+helpers.escape( acl['rid'] )+'/permissions'
-		url = 'http://'+config['DCOS_IP']+api_endpoint
+		url = 'http://'+DCOS_IP+api_endpoint
+		config = helpers.get_config( env.CONFIG_FILE )
+		headers = {
+			'Content-type': 'application/json',
+			'Authorization': 'token='+config['TOKEN'],
+		}	
 		try:
 			request = requests.get(
 				url,
 				headers=headers,
 				)
 			request.raise_for_status()
-			log(
+			helpers.log(
 				log_level='INFO',
 				operation='GET',
-				objects=['ACLs', 'Permissions'],
+				objects=['ACLs: '+acl['rid'], 'Permissions'],
 				indx=index,
 				content=request.status_code
 				)				
 		except requests.exceptions.HTTPError as error:
-			log(
+			helpers.log(
 				log_level='ERROR',
 				operation='GET',
-				objects=['ACLs', 'Permissions'],
+				objects=['ACLs:'+acl['rid'], 'Permissions'],
 				indx=index,
 				content=error
 				)	
@@ -123,32 +132,40 @@ def get_acls_permissions ( DCOS_IP, save_path, acls ):
 
 		#Loop through the list of user permissions and get their associated actions
 		for index2, user in ( enumerate( permissions['users'] ) ):
+
 			#get each user that is a member of this acl and append to ['users']
 			acls_permissions['array'][index]['users'].append( user )
+
 			#Loop through the list of actions for this user and get the action value
 			for index3, action in ( enumerate ( user['actions'] ) ):
+
 				#get action from DC/OS
 				#GET /acls/{rid}/users/{uid}/{action}
 				api_endpoint = '/acs/api/v1/acls/'+helpers.escape( acl['rid'] )+'/users/'+user['uid']+'/'+action['name']
 				url = 'http://'+config['DCOS_IP']+api_endpoint
+				config = helpers.get_config( env.CONFIG_FILE )
+				headers = {
+					'Content-type': 'application/json',
+					'Authorization': 'token='+config['TOKEN'],
+				}	
 				try:
 					request = requests.get(
 						url,
 						headers=headers,
 						)
 					request.raise_for_status()
-					log(
+					helpers.log(
 						log_level='INFO',
 						operation='GET',
-						objects=['ACLs', 'Permissions','Users','Actions'],
+						objects=['ACLs: '+acl['rid'], 'Permissions','Users','Actions'],
 						indx=index3,
 						content=request.status_code
 						)				
 				except requests.exceptions.HTTPError as error:
-					log(
+					helpers.log(
 						log_level='ERROR',
 						operation='GET',
-						objects=['ACLs', 'Permissions','Users','Actions'],
+						objects=['ACLs: '+acl['rid'], 'Permissions','Users','Actions'],
 						indx=index3,
 						content=error
 						)	
@@ -158,32 +175,39 @@ def get_acls_permissions ( DCOS_IP, save_path, acls ):
 
 		#Repeat loop with groups to get all groups and actions
 		for index2, group in ( enumerate( permissions['groups'] ) ):
+
 			#get each user that is a member of this acl and append to ['users']
 			acls_permissions['array'][index]['groups'].append( group )
+			
 			#Loop through the list of actions for this user and get the action value
 			for index3, action in ( enumerate ( group['actions'] ) ):
 				#get action from DC/OS
 				#GET /acls/{rid}/users/{uid}/{action}
 				api_endpoint = '/acs/api/v1/acls/'+helpers.escape( acl['rid'] )+'/groups/'+helpers.escape( group['gid'] )+'/'+action['name']
 				url = 'http://'+config['DCOS_IP']+api_endpoint
+				config = helpers.get_config( env.CONFIG_FILE )
+				headers = {
+					'Content-type': 'application/json',
+					'Authorization': 'token='+config['TOKEN'],
+				}
 				try:
 					request = requests.get(
 						url,
 						headers=headers,
 						)
 					request.raise_for_status()
-					log(
+					helpers.log(
 						log_level='INFO',
 						operation='GET',
-						objects=['ACLs', 'Permissions','Groups','Actions'],
+						objects=['ACLs: '+acl['rid'], 'Permissions','Groups','Actions'],
 						indx=index3,
 						content=request.status_code
 						)		
 				except requests.exceptions.HTTPError as error:
-					log(
+					helpers.log(
 						log_level='ERROR',
 						operation='GET',
-						objects=['ACLs', 'Permissions','Groups','Actions'],
+						objects=['ACLs: '+acl['rid'], 'Permissions','Groups','Actions'],
 						indx=index3,
 						content=error
 						)	
@@ -194,11 +218,11 @@ def get_acls_permissions ( DCOS_IP, save_path, acls ):
 
 	#write dictionary as a JSON object to file
 	acls_permissions_json = json.dumps( acls_permissions ) 		#convert to JSON
-	acls_permissions_file = open( save_path, 'w' )
+	acls_permissions_file = open( env.ACLS_PERMISSIONS_FILE, 'w' )
 	acls_permissions_file.write( acls_permissions_json )		#write to file in raw JSON
 	acls_permissions_file.close()		
 
-	log(
+	helpers.log(
 		log_level='INFO',
 		operation='GET',
 		objects=['ACLs', 'Permissions'],

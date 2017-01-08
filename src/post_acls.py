@@ -17,18 +17,20 @@ import sys
 import os
 import requests
 import json
+import env        #environment variables and constants
 import helpers      #helper functions in separate module helpers.py
 
-def post_acls ( DCOS_IP, load_path ):
+def post_acls ( DCOS_IP ):
 	"""
-	Get the ACL information from the load_path provided as an argument,
+	Get the ACL information from the ACLs file path specified in the env parameters,
 	and post it to a DC/OS cluster available at the DCOS_IP argument.
 	"""	
-	
+
+	config = helpers.get_config( env.CONFIG_FILE )	
 	try:  	
 		#open the ACLS file and load the LIST of acls from JSON
-		acls_file = open( load_path, 'r' )
-		log(
+		acls_file = open( env.ACLS_FILE, 'r' )
+		helpers.log(
 			log_level='INFO',
 			operation='LOAD',
 			objects=['ACLs'],
@@ -36,7 +38,7 @@ def post_acls ( DCOS_IP, load_path ):
 			content='** OK **'
 			)
 	except IOError as error:
-		log(
+		helpers.log(
 			log_level='ERROR',
 			operation='LOAD',
 			objects=['ACLs'],
@@ -49,7 +51,7 @@ def post_acls ( DCOS_IP, load_path ):
 	acls = json.loads( acls_file.read() )
 	acls_file.close()
 
-	#loop through the list of ACL Rules and create the ACLS in the system
+	#loop through the list of ACL Rules and
 	#PUT /acls/{rid}
 	for index, acl in ( enumerate( acls['array'] ) ): 
 
@@ -68,12 +70,12 @@ def post_acls ( DCOS_IP, load_path ):
 		try:
 			request = requests.put(
 			url,
-		 	data = json.dumps( data ),
-		 	headers = headers
+		 	headers = headers,
+		 	data = json.dumps( data )
 			)
 			request.raise_for_status()
 			#show progress after request
-			log(
+			helpers.log(
 				log_level='INFO',
 				operation='PUT',
 				objects=['ACLs: '+rid],
@@ -81,7 +83,7 @@ def post_acls ( DCOS_IP, load_path ):
 				content=request.status_code
 				)
 		except requests.exceptions.HTTPError as error:
-			log(
+			helpers.log(
 				log_level='ERROR',
 				operation='PUT',
 				objects=['ACLs: '+rid],
@@ -91,19 +93,20 @@ def post_acls ( DCOS_IP, load_path ):
 	
 	return True
 
-def post_acls_permissions( DCOS_IP, load_path ):
+def post_acls_permissions( DCOS_IP ):
 	"""
-	Get the list of acls_permissions from the load_path provided as an argument,
+	Get the list of acls_permissions from the load_path in the environment parameters,
 	and post it to a DC/OS cluster available at the DCOS_IP argument.
 	"""
 	#loop through the list of ACL permission rules and create the ACLS in the system
 	#/acls/{rid}/groups/{gid}/{action}
 	#/acls/{rid}/users/{uid}/{action}
 
+	config = helpers.get_config( env.CONFIG_FILE )
 	try:  	
-	#open the GROUPS file and load the LIST of groups from JSON
-		acls_permissions_file = open( load_path, 'r' )
-		log(
+		#open the GROUPS file and load the LIST of groups from JSON
+		acls_permissions_file = open( env.ACLS_FILE, 'r' )
+		helpers.log(
 			log_level='INFO',
 			operation='LOAD',
 			objects=['ACLs', 'Permissions'],
@@ -111,7 +114,7 @@ def post_acls_permissions( DCOS_IP, load_path ):
 			content='** OK **'
 			)
 	except IOError as error:
-		log(
+		helpers.log(
 			log_level='ERROR',
 			operation='LOAD',
 			objects=['ACLs', 'Permissions'],
@@ -151,7 +154,7 @@ def post_acls_permissions( DCOS_IP, load_path ):
 					)
 					request.raise_for_status()
 					#show progress after request
-					log(
+					helpers.log(
 						log_level='INFO',
 						operation='PUT',
 						objects=[ 'ACLs: '+rid,'Users: '+uid ],
@@ -159,7 +162,7 @@ def post_acls_permissions( DCOS_IP, load_path ):
 						content=request.status_code
 						)	
 				except requests.exceptions.HTTPError as error:
-					log(
+					helpers.log(
 						log_level='ERROR',
 						operation='PUT',
 						objects=[ 'ACLs: '+rid,'Users: '+uid ],
@@ -191,7 +194,7 @@ def post_acls_permissions( DCOS_IP, load_path ):
 					)
 					request.raise_for_status()
 					#show progress after request
-					log(
+					helpers.log(
 						log_level='INFO',
 						operation='PUT',
 						objects=[ 'ACLs: '+rid,'Groups: '+gid ],
@@ -199,7 +202,7 @@ def post_acls_permissions( DCOS_IP, load_path ):
 						content=request.status_code
 						)	
 				except requests.exceptions.HTTPError as error:
-					log(
+					helpers.log(
 						log_level='ERROR',
 						operation='PUT',
 						objects=[ 'ACLs: '+rid,'Groups: '+gid ],
@@ -207,7 +210,7 @@ def post_acls_permissions( DCOS_IP, load_path ):
 						content=error
 						)	
 		
-	log(
+	helpers.log(
 		log_level='INFO',
 		operation='PUT',
 		objects=['ACLs','Permissions'],

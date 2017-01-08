@@ -60,7 +60,6 @@ def get_groups ( DCOS_IP ):
 	groups = request.text
 	#save to GROUPS file
 	groups_file = open( env.GROUPS_FILE, 'w' )
-	#write to file in same raw JSON as obtained from DC/OS
 	groups_file.write( groups )			
 	groups_file.close()					
 	helpers.log(
@@ -71,6 +70,7 @@ def get_groups ( DCOS_IP ):
 		content='* DONE *'
 		)	
 	groups_dict = dict( json.loads( groups ) )
+	
 	return groups_dict
 
 def get_groups_users ( DCOS_IP, groups ):
@@ -128,6 +128,7 @@ def get_groups_users ( DCOS_IP, groups ):
 
 		memberships = request.json() 	#get memberships from the JSON
 
+		#Loop through the list of groups and get their associated actions
 		for index2, membership in ( enumerate( memberships['array'] ) ):
 
 			#get each user that is a member of this group and append

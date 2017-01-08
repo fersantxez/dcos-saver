@@ -80,10 +80,10 @@ if __name__ == "__main__":
 			indx=0,
 			content=config
 			)
-		sys.exit()
+		sys.exit(3)
 	
 	#main menu loop
-	option = '1' 									#initialize to anything different than 'EXIT'
+	option = '1' 						#initialize to anything different than 'EXIT'
 	while env.hotkeys_main[option] is not 'EXIT':
 
 		display_main_menu( config, env.state )

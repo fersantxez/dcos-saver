@@ -53,10 +53,9 @@ def log ( log_level, operation, objects, indx, content ):
 	else:
 		line_end = '\r'
 	#print log message with the right format. Fixed field lengths for justification
-	#sys.stdout.write( '{0}{1:<3} {2:<5}: {3:<4} {4:<3}: {5:30}: {6:>20} {7:>1}'.format(
 	print( '{0}{1:<3} {2:<5}: {3:<4} {4:<3}: {5}: {6}'.format(
 			line_start,		#0
-			env.MARK,			#1
+			env.MARK,		#1
 			log_level,		#2
 			operation,		#3
 			indx,			#4
@@ -68,7 +67,6 @@ def log ( log_level, operation, objects, indx, content ):
 	#return carriage for repeatig line if 'INFO'
 	if ( log_level == 'INFO' ):
 		print('')
-		#sys.stdout.flush()
 	return True
 
 def get_input ( message, valid_options=[] ):
@@ -79,7 +77,7 @@ def get_input ( message, valid_options=[] ):
 	"""
 
 	while True:
-		sys.stdout.write('{0} {1}: \n'.format( env.MARK_INPUT, message ) )
+		print('{0} {1}: '.format( env.MARK_INPUT, message ) )
 		user_input = input( env.MSG_ENTER_NEW_VALUE )
 		if ( ( valid_options == [] ) or ( user_input in valid_options ) ):
 			return user_input
@@ -127,7 +125,7 @@ def create_config ( config_path ) :
 		'TOKEN': ''
 	}
 	config_file = open( config_path, 'w' )  	#open the config file for writing
-	config_file.write( json.dumps( config ) )			#read the entire file into a dict with JSON format
+	config_file.write( json.dumps( config ) )	#read the entire file into a dict with JSON format
 	config_file.close()
 	
 	return config
@@ -156,17 +154,21 @@ def get_config ( config_path ) :
 	
 	return config
 
-def show_config ( config ) :
+def show_config ( DCOS_IP=None ) :
 	"""
 	Show the full program configuration from the file.
 	Program configuration is received as a dictionary.
+	Takes no parameters but DCOS_IP is left to use the same interface on all options.
 	"""
+
+	config = get_config( env.CONFIG_FILE )
 	print('{0}'.format( env.MSG_CURRENT_CONFIG ) )
 	print('{0} : {1}'.format( env.MSG_DCOS_IP, config['DCOS_IP'] ) ) 
 	print('{0} : {1}'.format( env.MSG_DCOS_USERNAME, config['DCOS_USERNAME'] ) )
 	print('{0} : {1}'.format( env.MSG_DCOS_PASSWORD, config['DCOS_PASSWORD'] ) )
 	print('{0} : {1}'.format( env.MSG_DEFAULT_PASSWORD, config['DEFAULT_USER_PASSWORD'] ) )
 	print('{0} : {1}'.format( env.MSG_TOKEN, config['TOKEN'] ) )	
+	get_input( message=env.MSG_PRESS_ENTER )
 
 	return True
 
@@ -194,24 +196,28 @@ def update_config ( config_path, config ) :
 	return config
 
 
-def list_configs ( config ):
+def list_configs ( DCOS_IP=None ):
 	"""
 	List all the DC/OS configurations available on disk to be loaded.
+	Takes no parameters but DCOS_IP is left to use the same interface on all options.
 	"""
 	print('{0}'.format( env.MSG_AVAIL_CONFIGS ) )
 	for config_dir in os.listdir( env.BACKUP_DIR ): print( config_dir )
 
+	get_input( message=env.MSG_PRESS_ENTER )
+
 	return True
 
-def load_configs ( config ):
+def load_configs ( DCOS_IP=None ):
 	"""
 	Load a DC/OS configuration from disk into local buffer. If the local buffer directory does not exist, create it.
+	Takes no parameters but DCOS_IP is left to use the same interface on all options.
 	"""
 
 	#create the DATA_DIR if it doesn't exist yet
 	if not os.path.isdir( env.DATA_DIR ):
 		os.makedirs( env.DATA_DIR )
-	list_config( config )
+	list_configs()
 	name = get_input( message=env.MSG_ENTER_CONFIG_LOAD )
 	if os.path.exists( env.BACKUP_DIR+'/'+name ):
 		copy2( env.BACKUP_DIR+'/'+name+'/'+basename( env.USERS_FILE ), 			env.DATA_DIR+'/'+basename( env.USERS_FILE )  )
@@ -220,6 +226,7 @@ def load_configs ( config ):
 		copy2( env.BACKUP_DIR+'/'+name+'/'+basename( env.GROUPS_USERS_FILE ), 		env.DATA_DIR+'/'+basename( env.GROUPS_USERS_FILE )  )
 		copy2( env.BACKUP_DIR+'/'+name+'/'+basename( env.ACLS_FILE ), 			env.DATA_DIR+'/'+basename( env.ACLS_FILE )  )
 		copy2( env.BACKUP_DIR+'/'+name+'/'+basename( env.ACLS_PERMISSIONS_FILE ),	env.DATA_DIR+'/'+basename( env.ACLS_PERMISSIONS_FILE )  )
+		get_input( message=env.MSG_PRESS_ENTER )
 		return True
 	else:
 		log(
@@ -231,11 +238,11 @@ def load_configs ( config ):
 			)
 		return False
 
-def save_configs ( config ):
+def save_configs ( DCOS_IP=None ):
 	"""
 	Save the running DC/OS configuration to disk from local buffer.
 	"""
-	list_config( config )
+	list_configs( config )
 	name = get_input( message=env.MSG_ENTER_CONFIG_SAVE )
 	if not os.path.exists( env.BACKUP_DIR+'/'+name ):
 		os.makedirs( env.BACKUP_DIR+'/'+name)
@@ -245,9 +252,159 @@ def save_configs ( config ):
 	copy2( env.DATA_DIR+'/'+basename( env.GROUPS_USERS_FILE ),  	env.BACKUP_DIR+'/'+name+'/'+basename( env.GROUPS_USERS_FILE ) )
 	copy2( env.DATA_DIR+'/'+basename( env.ACLS_FILE ), 		env.BACKUP_DIR+'/'+name+'/'+basename( env.ACLS_FILE ) )
 	copy2( env.DATA_DIR+'/'+basename( env.ACLS_PERMISSIONS_FILE ),	env.BACKUP_DIR+'/'+name+'/'+basename( env.ACLS_PERMISSIONS_FILE ) )
+	get_input( message=env.MSG_PRESS_ENTER )
 
 	return True
 
+def check_users ( DCOS_IP=None ):
+	"""
+	List all the users currently in the application's buffer.
+	Takes no parameters but DCOS_IP is left to use the same interface on all options.
+	"""
+
+	config = helpers.get_config( env.CONFIG_FILE )  
+	print('{0}'.format( env.MSG_CURRENT_USERS ) )
+	#Open users file
+	try:  
+		users_file = open( env.USERS_FILE, 'r' )  
+	except IOError as error:
+		helpers.log(
+			log_level='ERROR',
+			operation='LOAD',
+			objects=['Users'],
+			indx=0,
+			content=error
+			)
+		get_input( message=env.MSG_PRESS_ENTER )
+		return False #return Error if file isn't available
+    #load entire text file and convert to JSON - dictionary
+	users = json.loads( users_file.read() )
+	users_file.close()
+
+	for index, user in ( enumerate( users['array'] ) ):
+		print( 'User #{0}: {1}'.format(index, user['uid'] ) )
+
+	#open up the users_groups file and print the groups each user is a member of
+	try:  
+		users_groups_file = open( env.USERS_GROUPS_FILE, 'r' ) 
+	except IOError as error:
+		helpers.log(
+			log_level='ERROR',
+			operation='LOAD',
+			objects=['Users', 'Groups'],
+			indx=0,
+			content=error
+			)
+		get_input( message=env.MSG_PRESS_ENTER )
+		return False #return Error if file isn't available
+    #load entire text file and convert to JSON - dictionary
+	users_groups = json.loads( users_groups_file.read() )
+	users_groups_file.close()	
+
+	for index, user_group in ( enumerate( users_groups['array'] ) ):
+
+		groups = user_group['groups']
+
+		for group in groups:
+
+			print( 'User {0} belongs to Group: {1}'.format(user_group['uid'], group['group']['gid'] ) )
+
+	get_input( message=env.MSG_PRESS_ENTER )
+
+	return True
+
+def check_groups ( DCOS_IP=None ):
+	"""
+	List all the groups currently in the application's buffer.
+	Takes no parameters but DCOS_IP is left to use the same interface on all options.
+	"""
+
+	config = helpers.get_config( env.CONFIG_FILE )  
+	print('{0}'.format( env.MSG_CURRENT_GROUPS ) )
+	#Open groups file
+	try:  
+		groups_file = open( env.GROUPS_FILE, 'r' ) 
+	except IOError as error:
+		helpers.log(
+			log_level='ERROR',
+			operation='LOAD',
+			objects=['Groups'],
+			indx=0,
+			content=error
+			)
+		get_input( message=env.MSG_PRESS_ENTER )
+		return False #return Error if file isn't available
+    #load entire text file and convert to JSON - dictionary
+	groups = json.loads( groups_file.read() )
+	groups_file.close()
+
+	for index, group in ( enumerate( groups['array'] ) ):
+		print( 'Group #{0}: {1}'.format(index, group['gid'] ) )
+
+	#open up the groups_users file and print the users each group has as members
+	try:  
+		groups_users_file = open( env.GROUPS_USERS_FILE, 'r' ) 
+	except IOError as error:
+		helpers.log(
+			log_level='ERROR',
+			operation='LOAD',
+			objects=['Groups', 'Users'],
+			indx=0,
+			content=error
+			)
+		get_input( message=env.MSG_PRESS_ENTER )
+		return False #return Error if file isn't available
+    #load entire text file and convert to JSON - dictionary
+	groups_users = json.loads( groups_users_file.read() )
+	groups_users_file.close()	
+
+	#loop through the list of users_groups and print them
+	for index, group_user in ( enumerate( groups_users['array'] ) ):
+
+		users = group_user['users']
+
+		for user in users:
+
+			print( 'Group {0} has as a member User: {1}'.format(group_user['gid'], user['user']['uid'] ) )
+
+
+	get_input( message=env.MSG_PRESS_ENTER )
+
+	return True
+
+def check_acls ( DCOS_IP=None ):
+	"""
+	List all the ACLs currently in the application's buffer.
+	Takes no parameters but DCOS_IP is left to use the same interface on all options.
+	"""
+
+	config = helpers.get_config( env.CONFIG_FILE )  
+	print('{0}'.format( env.MSG_CURRENT_ACLS ) )
+	#Open users file
+	try:  
+		#open the groups file and load the LIST of Groups from JSON
+		acls_file = open( env.ACLS_FILE, 'r' )   
+	except IOError as error:
+		helpers.log(
+			log_level='ERROR',
+			operation='LOAD',
+			objects=['ACLs'],
+			indx=0,
+			content=error
+			)
+		get_input( message=env.MSG_PRESS_ENTER )
+		return False #return Error if file isn't available
+    #load entire text file and convert to JSON - dictionary
+	acls = json.loads( acls_file.read() )
+	acls_file.close()
+
+	#loop through the list of groups and
+	for index, acl in ( enumerate( acls['array'] ) ):
+		print( 'ACL #{0}: {1}'.format(index, acl['rid'] ) )
+
+	get_input( message=env.MSG_PRESS_ENTER )
+
+	return True 
 
 def delete_local_buffer ( path ) :
 	"""
@@ -300,33 +457,21 @@ def menu_line (hotkey='', message='', config_param='', state_param=''):
 	Returns True.
 	"""
 	if not ( hotkey == '' ):
-		#sys.stdout.write('{0}'.format( hotkey ) )
 		print( '{0} '.format( hotkey ), end='', flush=False )
-		#sys.stdout.write(' : ')
 		print( '{0} '.format( ':' ), end='', flush=False )
 
 	if ( message == '' ):
-		#sys.stdout.write('*'*env.MENU_WIDTH + '\n') #A separation line
 		print( '*'*env.MENU_WIDTH ) #A separation line
 	else:
-		#sys.stdout.write( '{0} {1} {2}'.format( 
-		#		message,	
-		#		'*'*int( (env.MENU_WIDTH)-( len(message)+len(config_param) ) ),
-		#		'\n'
-		#		)
-		#	)
 		print( '{0}'.format( message, end='' ) 
 			#'*'*int( (env.MENU_WIDTH)-( len(message)+len(config_param) ) ),
 			
 		)
 
-
 	if not (config_param == ''):
-		#sys.stdout.write('{0}'.format( config_param ) )
 		print( '{0}'.format( config_param ), end='', flush=False  )
 
 	if not (state_param == ''):
-		#sys.stdout.write('{0}'.format( state_param ) )
 		print( '{0}'.format( state_param ), end='', flush=False  )
 
 	print('')
@@ -389,10 +534,10 @@ def display_main_menu( config, state ):
 	menu_line( hotkey=hk['get_all'], message=env.MSG_GET_ALL )
 	menu_line()
 	menu_line( message=env.MSG_PUT_MENU )
-	menu_line( hotkey=hk['put_users'], message=env.MSG_PUT_USERS )
-	menu_line( hotkey=hk['put_groups'], message=env.MSG_PUT_GROUPS )
-	menu_line( hotkey=hk['put_acls'], message=env.MSG_PUT_ACLS )
-	menu_line( hotkey=hk['put_all'], message=env.MSG_PUT_ALL )
+	menu_line( hotkey=hk['post_users'], message=env.MSG_PUT_USERS )
+	menu_line( hotkey=hk['post_groups'], message=env.MSG_PUT_GROUPS )
+	menu_line( hotkey=hk['post_acls'], message=env.MSG_PUT_ACLS )
+	menu_line( hotkey=hk['post_all'], message=env.MSG_PUT_ALL )
 	menu_line()
 	menu_line( message=env.MSG_CHECK_MENU )
 	menu_line( hotkey=hk['check_users'], message=env.MSG_CHECK_USERS )
@@ -431,7 +576,6 @@ def login_to_cluster ( config ):
 	headers = {
 		'Content-type': 'application/json'
 	}
-	#data = '{ "uid":"'"config['DCOS_USERNAME']"'", "password":"'"config['DCOS_PASSWORD']"'" }'
 	data = { 
 		"uid":		config['DCOS_USERNAME'],
 		"password":	config['DCOS_PASSWORD']
@@ -484,5 +628,3 @@ def exit( DCOS_IP ):
 	sys.exit(1)
 
 	return None
-
-

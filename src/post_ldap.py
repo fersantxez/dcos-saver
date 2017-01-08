@@ -15,18 +15,20 @@ import sys
 import os
 import requests
 import json
+import env        #environment variables and constants
 import helpers      #helper functions in separate module helpers.py
 
-def post_ldap ( DCOS_IP, load_path ):
+def post_ldap ( DCOS_IP ):
   """ 
-  Get the LDAP configuration from the load_path provided as an argument,
+  Get the LDAP configuration from the buffer,
   and post it to a DC/OS cluster available at the DCOS_IP argument.
   """ 
 
+  config = helpers.get_config( env.CONFIG_FILE )
   try:  
     #open the LDAP file and load the LDAP configuration from JSON
-    ldap_file = open( load_path, 'r' )
-    log(
+    ldap_file = open( env.LDAP_FILE, 'r' )
+    helpers.log(
       log_level='INFO',
       operation='LOAD',
       objects=['LDAP'],
@@ -34,14 +36,14 @@ def post_ldap ( DCOS_IP, load_path ):
       content='** OK **'
       )    
   except IOError as error:
-    log(
+    helpers.log(
       log_level='ERROR',
       operation='LOAD',
       objects=['LDAP'],
       indx=0,
       content=error
       )
-    return False #return Error if file isn't 
+    return False
 
   #load entire text file and convert to JSON - dictionary
   ldap_config = json.loads( ldap_file.read() )
@@ -55,7 +57,7 @@ def post_ldap ( DCOS_IP, load_path ):
   'Authorization': 'token='+config['TOKEN'],
   }
   data = ldap_config
-  #send the request to PUT the new USER
+  #send the request to PUT the LDAP configuration
   try:
     request = requests.put(
       url,
@@ -64,7 +66,7 @@ def post_ldap ( DCOS_IP, load_path ):
     )
     request.raise_for_status()
     #show progress after request
-    log(
+    helpers.log(
       log_level='INFO',
       operation='PUT',
       objects=['LDAP'],
@@ -72,7 +74,7 @@ def post_ldap ( DCOS_IP, load_path ):
       content=request.status_code
     )
   except requests.exceptions.HTTPError as error:
-      log(
+      helpers.log(
         log_level='ERROR',
         operation='PUT',
         objects=['LDAP'],
@@ -80,7 +82,7 @@ def post_ldap ( DCOS_IP, load_path ):
         content=request.status_code
         )
 
-  log(
+  helpers.log(
     log_level='INFO',
     operation='PUT',
     objects=['Users'],

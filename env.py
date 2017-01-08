@@ -29,6 +29,7 @@ GROUPS_FILE=DATA_DIR+'/groups.json'
 GROUPS_USERS_FILE=DATA_DIR+'/groups_users.json'
 ACLS_FILE=DATA_DIR+'/acls.json'
 ACLS_PERMISSIONS_FILE=DATA_DIR+'/acls_permissions.json'
+LDAP_FILE=DATA_DIR+'/ldap.json'
 
 MENU_WIDTH = 80
 
@@ -49,9 +50,13 @@ MSG_TOKEN				=	'Current authentication token'
 MSG_IS_OK				=	'Is this configuration ok? (y/n)'
 MSG_ENTER_PARAM_CHANGE	=	'Enter parameter to change'
 MSG_ENTER_NEW_VALUE		=	MARK_INPUT
+MSG_PRESS_ENTER			=	'Press ENTER to continue...'
 MSG_AVAIL_CONFIGS		=	'Currently available configurations'
 MSG_ENTER_CONFIG_LOAD	=	'Enter name of the configuration to load'
 MSG_ENTER_CONFIG_SAVE	=	'Please note that saving under the same name as an existing config will OVERWRITE IT!.\nEnter name of the configuration to save '
+MSG_CURRENT_USERS		=	'Users currently in buffer: '
+MSG_CURRENT_GROUPS		=	'Groups currently in buffer: '
+MSG_CURRENT_ACLS		=	'ACLs and permissions currently in buffer: '
 #Main menu
 MSG_AVAIL_CMD			= 'Available commands: 	'
 MSG_ENTER_CMD			= 'Enter commmand: 								'
@@ -100,10 +105,10 @@ hotkeys_main = {
 '2' : 'get_groups',
 '3' : 'get_acls',
 'g' : 'get_all',
-'4' : 'put_users',
-'5' : 'put_groups',
-'6' : 'put_acls',
-'p' : 'put_all',
+'4' : 'post_users',
+'5' : 'post_groups',
+'6' : 'post_acls',
+'p' : 'post_all',
 '7' : 'check_users',
 '8' : 'check_groups',
 '9' : 'check_acls',

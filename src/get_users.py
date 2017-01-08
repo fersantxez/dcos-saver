@@ -68,7 +68,7 @@ def get_users ( DCOS_IP ):
 		indx=0,
 		content='* DONE. *'
 		)
-	users_dict = dict( json.loads(users) )
+	users_dict = dict( json.loads( users ) )
 	return users_dict				
 
 

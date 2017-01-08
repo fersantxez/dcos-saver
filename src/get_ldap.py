@@ -16,18 +16,19 @@ import sys
 import os
 import requests
 import json
+import env				#environment variables and constants
 import helpers			#helper functions in separate module helpers.py
 
-def get_ldap ( DCOS_IP, save_path ):
+def get_ldap ( DCOS_IP ):
 	"""
 	Get the LDAP configuration from a DC/OS cluster as a JSON blob.
 	Save it to the text file in the save_path provided.
 	Return the LDAP config as a dictionary.
 	"""
 
-	#Get LDAP information from DC/OS. 
 	api_endpoint = '/acs/api/v1/ldap/config'
 	url = 'http://'+config['DCOS_IP']+api_endpoint
+	config = helpers.get_config( env.CONFIG_FILE )	
 	headers = {
 		'Content-type': 'application/json',
 		'Authorization': 'token='+config['TOKEN'],
@@ -38,7 +39,7 @@ def get_ldap ( DCOS_IP, save_path ):
 			headers=headers,
 			)
 		request.raise_for_status()
-		log(
+		helpers.log(
 			log_level='INFO',
 			operation='GET',
 			object=['LDAP'],
@@ -46,7 +47,7 @@ def get_ldap ( DCOS_IP, save_path ):
 			content=request.status_code
 			)
 	except requests.exceptions.HTTPError as error:
-		log(
+		helpers.log(
 			log_level='ERROR',
 			operation='GET',
 			objects=['LDAP'],
@@ -54,22 +55,21 @@ def get_ldap ( DCOS_IP, save_path ):
 			content=error
 			)		
 
-	ldap_config = request.text				#raw text form requests, comes in JSON form from DC/OS
-
+	ldap_config = request.text
 	#save to LDAP file
-	ldap_file = open( config['LDAP_FILE'], 'w' )
+	ldap_file = open( env.LDAP_FILE, 'w' )
 	ldap_file.write( ldap_config )			#write to file in same raw JSON as obtained from DC/OS
 	ldap_file.close()					
-
-	log(
+	helpers.log(
 		log_level='INFO',
 		operation='GET',
 		objects=['LDAP'],
 		indx=0,
 		content='* DONE. *'
 		)	
+	ldap_dict = dict( json.loads( ldap_config ) )
 
-	return dict( ldap_config )
+	return ldap_dict
 
 
 

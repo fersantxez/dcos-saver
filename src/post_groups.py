@@ -15,18 +15,20 @@ import sys
 import os
 import requests
 import json
+import env        #environment variables and constants
 import helpers      #helper functions in separate module helpers.py
 
-def post_groups ( DCOS_IP, load_path ):
+def post_groups ( DCOS_IP ):
 	""" 
 	Get the Group information from the load_path provided as an argument,
 	and post it to a DC/OS cluster available at the DCOS_IP argument.
 	"""
 
+	config = helpers.get_config( env.CONFIG_FILE )
 	try:  	
 		#open the GROUPS file and load the LIST of groups from JSON
-		groups_file = open( load_path, 'r' )
-		log(
+		groups_file = open( env.GROUPS_FILE, 'r' )
+		helpers.log(
 			log_level='INFO',
 			operation='LOAD',
 			objects=['Groups'],
@@ -34,7 +36,7 @@ def post_groups ( DCOS_IP, load_path ):
 			content='** OK **'
 			)
 	except IOError as error:
-		log(
+		helpers.log(
 			log_level='ERROR',
 			operation='LOAD',
 			objects=['Groups'],
@@ -62,16 +64,16 @@ def post_groups ( DCOS_IP, load_path ):
 		data = {
 		'description': group['description'],
 		}
-		#send the request to PUT the new USER
+		#send the request to PUT the new GROUP
 		try:
 			request = requests.put(
-			url,
-			data = json.dumps( data ),
-			headers = headers
+				url,
+				headers = headers,
+				data = json.dumps( data )
 			)
 			request.raise_for_status()
 			#show progress after request
-			log(
+			helpers.log(
 				log_level='INFO',
 				operation='PUT',
 				objects=['Groups: '+gid],
@@ -79,27 +81,29 @@ def post_groups ( DCOS_IP, load_path ):
 				content=request.status_code
 				)
 		except requests.exceptions.HTTPError as error:
-			log(
+			helpers.log(
 				log_level='ERROR',
 				operation='PUT',
 				objects=['Groups: '+gid],
 				indx=0,
 				content=request.status_code
 				)
+			return False
 
 	return True
 	
 
-def post_groups_users( DCOS_IP, load_path ):
+def post_groups_users( DCOS_IP ):
 	""" 
 	Get the list of groups_users from the load_path provided as an argument,
 	and post it to a DC/OS cluster available at the DCOS_IP argument.
 	"""
 
+	config = helpers.get_config( env.CONFIG_FILE )
 	try:  	
 		#open the GROUPS file and load the LIST of groups from JSON
-		groups_file = open( load_path, 'r' )
-		log(
+		groups_users_file = open( env.GROUPS_USERS_FILE, 'r' )
+		helpers.log(
 			log_level='INFO',
 			operation='LOAD',
 			objects=['Groups', 'Users'],
@@ -107,7 +111,7 @@ def post_groups_users( DCOS_IP, load_path ):
 			content='** OK **'
 			)
 	except IOError as error:
-		log(
+		helpers.log(
 			log_level='ERROR',
 			operation='LOAD',
 			objects=['Groups', 'Users'],
@@ -138,12 +142,12 @@ def post_groups_users( DCOS_IP, load_path ):
 			#send the request to PUT the new USER
 			try:
 				request = requests.put(
-				url,
-				headers = headers
+					url,
+					headers = headers
 				)
 				request.raise_for_status()
 				#show progress after request
-				log(
+				helpers.log(
 					log_level='INFO',
 					operation='PUT',
 					objects=[ 'Groups: '+gid,'Users: '+uid ],
@@ -151,15 +155,16 @@ def post_groups_users( DCOS_IP, load_path ):
 					content=request.status_code
 					)	
 			except requests.exceptions.HTTPError as error:
-				log(
+				helpers.log(
 					log_level='ERROR',
 					operation='PUT',
 					objects=[ 'Groups: '+gid,'Users: '+uid ],
 					indx=index2,
 					content=error
-					)	
+					)
+				return False
 
-	log(
+	helpers.log(
 		log_level='INFO',
 		operation='PUT',
 		objects=['Groups','Users'],
