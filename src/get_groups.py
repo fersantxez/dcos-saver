@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # get_groups.py: retrieve and save configured groups on a DC/OS cluster
 #
@@ -67,7 +67,7 @@ def get_groups ( DCOS_IP ):
 		operation='GET',
 		objects=['Groups'],
 		indx=0,
-		content='* DONE *'
+		content=MSG_DONE
 		)	
 	groups_dict = dict( json.loads( groups ) )
 	
@@ -180,7 +180,7 @@ def get_groups_users ( DCOS_IP, groups ):
 		operation='GET',
 		objects=['Groups','Users'],
 		indx=0,
-		content='* DONE *'
+		content=MSG_DONE
 		)	
 
 	return groups_users

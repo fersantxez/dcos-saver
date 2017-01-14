@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # post_groups.py: load from file and restore groups to a DC/OS cluster
 #
@@ -169,7 +169,7 @@ def post_groups_users( DCOS_IP ):
 		operation='PUT',
 		objects=['Groups','Users'],
 		indx=0,
-		content='* DONE *'
+		content=MSG_DONE
 		)
 	
 	return True	

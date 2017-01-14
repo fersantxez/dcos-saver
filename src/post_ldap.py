@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # post_ldap.py: load from file and restore LDAP configuration to a DC/OS cluster
 #
@@ -88,7 +88,7 @@ def post_ldap ( DCOS_IP ):
     operation='PUT',
     objects=['Users'],
     indx=0,
-    content='* DONE *'
+    content=MSG_DONE
     )
 
   return True

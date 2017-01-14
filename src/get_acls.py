@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # get_acls.py: retrieve and save configured ACLs on a DC/OS cluster
 #
 # Author: Fernando Sanchez [ fernando at mesosphere.com ]
@@ -64,7 +64,7 @@ def get_acls ( DCOS_IP ):
 		operation='GET',
 		objects=['ACLs'],
 		indx=0,
-		content='* DONE *'
+		content=MSG_DONE
 		)
 
 	acls_dict = dict( json.loads( acls ) )
@@ -227,7 +227,7 @@ def get_acls_permissions ( DCOS_IP, acls ):
 		operation='GET',
 		objects=['ACLs', 'Permissions'],
 		indx=0,
-		content='* DONE *'
+		content=MSG_DONE
 		)
 
 	return acls_permissions

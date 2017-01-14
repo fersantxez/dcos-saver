@@ -124,6 +124,7 @@ def create_config ( config_path ) :
 		'ACLS_FILE': env.ACLS_FILE, 
 		'ACLS_PERMISSIONS_FILE': env.ACLS_PERMISSIONS_FILE, 
 		'AGENTS_FILE': env.AGENTS_FILE,
+		'SERVICE_GROUPS_FILE': env.SERVICE_GROUPS_FILE,
 		'TOKEN': ''
 	}
 	config_file = open( config_path, 'w' )  	#open the config file for writing
@@ -230,6 +231,9 @@ def load_configs ( DCOS_IP=None ):
 		copy2( env.BACKUP_DIR+'/'+name+'/'+basename( env.GROUPS_USERS_FILE ), 		env.DATA_DIR+'/'+basename( env.GROUPS_USERS_FILE )  )
 		copy2( env.BACKUP_DIR+'/'+name+'/'+basename( env.ACLS_FILE ), 			env.DATA_DIR+'/'+basename( env.ACLS_FILE )  )
 		copy2( env.BACKUP_DIR+'/'+name+'/'+basename( env.ACLS_PERMISSIONS_FILE ),	env.DATA_DIR+'/'+basename( env.ACLS_PERMISSIONS_FILE )  )
+		copy2( env.BACKUP_DIR+'/'+name+'/'+basename( env.AGENTS_FILE ),	env.DATA_DIR+'/'+basename( env.AGENTS_FILE )  )
+		copy2( env.BACKUP_DIR+'/'+name+'/'+basename( env.SERVICE_GROUPS_FILE ),	env.DATA_DIR+'/'+basename( env.SERVICE_GROUPS_FILE )  )
+
 		get_input( message=env.MSG_PRESS_ENTER )
 		return True
 	else:
@@ -256,6 +260,9 @@ def save_configs ( DCOS_IP=None ):
 	copy2( env.DATA_DIR+'/'+basename( env.GROUPS_USERS_FILE ),  	env.BACKUP_DIR+'/'+name+'/'+basename( env.GROUPS_USERS_FILE ) )
 	copy2( env.DATA_DIR+'/'+basename( env.ACLS_FILE ), 		env.BACKUP_DIR+'/'+name+'/'+basename( env.ACLS_FILE ) )
 	copy2( env.DATA_DIR+'/'+basename( env.ACLS_PERMISSIONS_FILE ),	env.BACKUP_DIR+'/'+name+'/'+basename( env.ACLS_PERMISSIONS_FILE ) )
+	copy2( env.DATA_DIR+'/'+basename( env.AGENTS_FILE ),	env.BACKUP_DIR+'/'+name+'/'+basename( env.AGENTS_FILE ) )
+	copy2( env.DATA_DIR+'/'+basename( env.SERVICE_GROUPS_FILE ),	env.BACKUP_DIR+'/'+name+'/'+basename( env.SERVICE_GROUPS_FILE ) )
+
 	get_input( message=env.MSG_PRESS_ENTER )
 
 	return True
@@ -442,6 +449,39 @@ def check_ldap ( DCOS_IP=None ):
 
 	return True 
 
+def check_service_groups ( DCOS_IP=None ):
+	"""
+	List all the Service Groups currently in the application's buffer.
+	Takes no parameters but DCOS_IP is left to use the same interface on all options.
+	"""
+
+	config = helpers.get_config( env.CONFIG_FILE )  
+	print('{0}'.format( env.MSG_CURRENT_SERVICE_GROUPS ) )
+	try:  
+		#open the service groups file and load the LIST of Service Groups from JSON
+		service_groups_file = open( env.SERVICE_GROUPS_FILE, 'r' )   
+	except IOError as error:
+		helpers.log(
+			log_level='ERROR',
+			operation='LOAD',
+			objects=['ACLs'],
+			indx=0,
+			content=env.MSG_ERROR_NO_SERVICE_GROUPS
+			)
+		get_input( message=env.MSG_PRESS_ENTER )
+		return False #return Error if file isn't available
+    #load entire text file and convert to JSON - dictionary
+	service_groups = json.loads( service_groups_file.read() )
+	service_groups_file.close()
+
+	#loop through the list of service groups and
+	for index, service_group in ( enumerate( service_groups['array'] ) ):
+		print( 'Service Group #{0}: {1}'.format(index, service_group['id'] ) )
+
+	get_input( message=env.MSG_PRESS_ENTER )
+
+	return True 
+
 def delete_local_buffer ( path ) :
 	"""
 	Delete the local buffer that stores the temporary configuration.
@@ -571,6 +611,7 @@ def display_main_menu( config, state ):
 	menu_line( hotkey=hk['get_acls'], message=env.MSG_GET_ACLS )
 	menu_line( hotkey=hk['get_ldap'], message=env.MSG_GET_LDAP )
 	menu_line( hotkey=hk['get_agents'], message=env.MSG_GET_AGENTS )
+	menu_line( hotkey=hk['get_service_groups'], message=env.MSG_GET_SERVICE_GROUPS )
 	menu_line( hotkey=hk['get_all'], message=env.MSG_GET_ALL )
 	menu_line()
 	menu_line( message=env.MSG_PUT_MENU )
@@ -578,6 +619,7 @@ def display_main_menu( config, state ):
 	menu_line( hotkey=hk['post_groups'], message=env.MSG_PUT_GROUPS )
 	menu_line( hotkey=hk['post_acls'], message=env.MSG_PUT_ACLS )
 	menu_line( hotkey=hk['post_ldap'], message=env.MSG_PUT_LDAP )
+	menu_line( hotkey=hk['post_service_groups'], message=env.MSG_PUT_SERVICE_GROUPS )
 	menu_line( hotkey=hk['post_all'], message=env.MSG_PUT_ALL )
 	menu_line()
 	menu_line( message=env.MSG_CHECK_MENU )
@@ -585,6 +627,7 @@ def display_main_menu( config, state ):
 	menu_line( hotkey=hk['check_groups'], message=env.MSG_CHECK_GROUPS )
 	menu_line( hotkey=hk['check_acls'], message=env.MSG_CHECK_ACLS )
 	menu_line( hotkey=hk['check_ldap'], message=env.MSG_CHECK_LDAP )
+	menu_line( hotkey=hk['check_service_groups'], message=env.MSG_CHECK_SERVICE_GROUPS )	
 	menu_line()
 	menu_line( hotkey=hk['exit'], message=env.MSG_EXIT )		
 	menu_line()
@@ -653,6 +696,39 @@ def login_to_cluster ( config ):
 
 	return True
 
+def walk_and_print( item, name ):
+	"""
+	Walks a recursive tree-like structure for items printing them.
+	Structure is assumed to have children under 'groups' and name under 'id'
+	Receives the tree item and an 'id' as a name to identify each node.
+	"""
+	if item['groups']:
+		for i in item['groups']:
+			walk_and_print( i, name )
+	else:
+		print( "{0}: {1}".format( name, item['id'] ) )
+
+	return True
+
+def remove_apps_from_service_group( service_group ):
+	"""
+	Walks a (potentially recursive tree-like structure of) service group in a dict that potentially include apps.
+	Removes all apps from the service group. Modifies the object passed as a parameter, does NOT return.
+	"""
+
+	#remove my children's apps
+	for index,group in enumerate( service_group['groups'] ):
+		#if isinstance( group, list ):
+		remove_apps_from_service_group( group )
+	
+	#remove my own apps
+	print("\n\n**DEBUG: I'm about to remove apps from : \n {0}".format(service_group))
+	#service_group['apps'] = [] #apps is an empty list
+	del service_group['apps']	#apps does not exist when posting groups
+	print("\n\n**DEBUG: There you go, this guy has no apps : \n {0}".format(service_group))
+
+	return True
+
 def exit( DCOS_IP ):
 	"""
 	Placeholder for operations that need to be done on exit.
@@ -680,6 +756,7 @@ def get_all( DCOS_IP ):
 	get_groups( DCOS_IP )
 	get_acls( DCOS_IP )
 	get_ldap( DCOS_IP )
+	get_service_groups( DCOS_IP )
 	get_agents( DCOS_IP )
 
 	return True
@@ -692,6 +769,7 @@ def post_all( DCOS_IP ):
 	post_users( DCOS_IP )
 	post_groups( DCOS_IP )
 	post_acls( DCOS_IP )
+	post_service_groups( DCOS_IP )
 	post_ldap( DCOS_IP )
 
 	return True

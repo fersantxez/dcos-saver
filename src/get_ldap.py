@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # get_ldap.py: retrieve and save LDAP configuration from a DC/OS cluster
 #

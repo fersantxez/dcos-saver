@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # post_acls.py: load from file and restore ACLs to a DC/OS cluster
 #
@@ -215,7 +215,7 @@ def post_acls_permissions( DCOS_IP ):
 		operation='PUT',
 		objects=['ACLs','Permissions'],
 		indx=0,
-		content='* DONE *'
+		content=MSG_DONE
 		)
 
 	return True
