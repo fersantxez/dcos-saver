@@ -46,7 +46,7 @@ if __name__ == "__main__":
 				operation='CREATE',
 				objects=['Config'],
 				indx=0,
-				content=config
+				content=env.MSG_ERROR_CONFIG
 				)
 			sys.exit(3)
 		else:		
@@ -78,7 +78,7 @@ if __name__ == "__main__":
 			operation='LOGIN',
 			objects=['Config'],
 			indx=0,
-			content=config
+			content=env.MSG_ERROR_LOGIN
 			)
 		sys.exit(3)
 	

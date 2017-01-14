@@ -41,6 +41,7 @@ def log ( log_level, operation, objects, indx, content ):
 
 	if not ( log_level in env.log_levels ):
 		log( 'ERROR', 0, env.ERROR_UNKNOWN_LOG_LEVEL )
+		return False
 
 	#INFO messages do not create a new line
 	if not ( log_level == 'INFO'):
@@ -62,11 +63,10 @@ def log ( log_level, operation, objects, indx, content ):
 			', '.join( str(x) for x in objects ),			#5
 			content			#6
 			),
-		end=line_end
+		end=line_end,
+		flush=not bool( log_level=='INFO' )
 		)
-	#return carriage for repeatig line if 'INFO'
-	if ( log_level == 'INFO' ):
-		print('')
+
 	return True
 
 def get_input ( message, valid_options=[] ):
@@ -273,7 +273,7 @@ def check_users ( DCOS_IP=None ):
 			operation='LOAD',
 			objects=['Users'],
 			indx=0,
-			content=error
+			content=env.MSG_ERROR_NO_USERS
 			)
 		get_input( message=env.MSG_PRESS_ENTER )
 		return False #return Error if file isn't available
@@ -330,7 +330,7 @@ def check_groups ( DCOS_IP=None ):
 			operation='LOAD',
 			objects=['Groups'],
 			indx=0,
-			content=error
+			content=env.MSG_ERROR_NO_GROUPS
 			)
 		get_input( message=env.MSG_PRESS_ENTER )
 		return False #return Error if file isn't available
@@ -390,7 +390,7 @@ def check_acls ( DCOS_IP=None ):
 			operation='LOAD',
 			objects=['ACLs'],
 			indx=0,
-			content=error
+			content=env.MSG_ERROR_NO_ACLS
 			)
 		get_input( message=env.MSG_PRESS_ENTER )
 		return False #return Error if file isn't available
@@ -595,7 +595,7 @@ def login_to_cluster ( config ):
 			indx=0,
 			content=request.status_code
 			)
-	except requests.exceptions.HTTPError as error:
+	except ( requests.exceptions.HTTPError, requests.exceptions.ConnectionError ) as error:
 		log(
 			log_level='ERROR',
 			operation='GET',
