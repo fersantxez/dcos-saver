@@ -53,7 +53,7 @@ MSG_IS_OK				=	'Is this configuration ok? (y/n)'
 MSG_ENTER_PARAM_CHANGE	=	'Enter parameter to change'
 MSG_ENTER_NEW_VALUE		=	MARK_INPUT
 MSG_PRESS_ENTER			=	'\nPress ENTER to continue...'
-MSG_DONE 				=	'								* DONE *\n'
+MSG_DONE 				=	'					* DONE *\n'
 MSG_ERROR_LOGIN			=	'Error logging into DC/OS. Please check your configuration.'
 MSG_ERROR_CONFIG		=	'Error creating configuration.'
 MSG_ERROR_NO_GROUPS		=	'Error finding Groups in buffer. Please GET or LOAD Groups into buffer.'
@@ -84,7 +84,7 @@ MSG_GET_GROUPS			= 'GET Groups from DC/OS cluster.				'
 MSG_GET_ACLS			= 'GET ACLs from DC/OS cluster.					'
 MSG_GET_LDAP			= 'GET LDAP configuration from DC/OS cluster.	'
 MSG_GET_AGENTS			= 'GET AGENT status from DC/OS cluster			'
-MSG_GET_SERVICE_GROUPS	= 'GET Service Groupsfrom DC/OS cluster			'
+MSG_GET_SERVICE_GROUPS	= 'GET Service Groups from DC/OS cluster		'
 MSG_GET_ALL				= 'GET ALL config from DC/OS cluster.			'
 MSG_PUT_MENU			= 'Commands to RESTORE information to DC/OS 	'
 MSG_PUT_USERS			= 'RESTORE Users to DC/OS cluster.				'
@@ -126,20 +126,19 @@ hotkeys_main = {
 '3' : 'get_acls',
 'z'	: 'get_ldap',
 'a' : 'get_agents',
-'s'	: 'get_service_groups',
+'b'	: 'get_service_groups',
 'g' : 'get_all',
 '4' : 'post_users',
 '5' : 'post_groups',
 '6' : 'post_acls',
 'k'	: 'post_ldap',
-#'b'	: 'post_agents', #no such thing
-'e'	: 'post_service_groups'
+'e'	: 'post_service_groups',
 'p' : 'post_all',
 '7' : 'check_users',
 '8' : 'check_groups',
 '9' : 'check_acls',
 'j'	: 'check_ldap',
-'v'	: 'check_service_groups'
+'v'	: 'check_service_groups',
 'x' : 'exit',
 '~' : 'noop'
 }

@@ -20,10 +20,12 @@ from get_groups import *
 from get_acls import *
 from get_ldap import *
 from get_agents import *
+from get_service_groups import *
 from post_users import *
 from post_groups import *
 from post_acls import *
 from post_ldap import *
+from post_service_groups import *
 
 def clear_screen():
 	"""
@@ -206,9 +208,8 @@ def list_configs ( DCOS_IP=None ):
 	List all the DC/OS configurations available on disk to be loaded.
 	Takes no parameters but DCOS_IP is left to use the same interface on all options.
 	"""
-	print('{0}'.format( env.MSG_AVAIL_CONFIGS ) )
-	for config_dir in os.listdir( env.BACKUP_DIR ): print( config_dir )
-
+	print( '{0}'.format( env.MSG_AVAIL_CONFIGS ) )
+	for config_dir in os.listdir( env.BACKUP_DIR ): print ('[{0}]'.format( config_dir ) )
 	get_input( message=env.MSG_PRESS_ENTER )
 
 	return True
@@ -474,9 +475,7 @@ def check_service_groups ( DCOS_IP=None ):
 	service_groups = json.loads( service_groups_file.read() )
 	service_groups_file.close()
 
-	#loop through the list of service groups and
-	for index, service_group in ( enumerate( service_groups['array'] ) ):
-		print( 'Service Group #{0}: {1}'.format(index, service_group['id'] ) )
+	walk_and_print ( service_groups, "Service Groups" )
 
 	get_input( message=env.MSG_PRESS_ENTER )
 
@@ -741,7 +740,7 @@ def exit( DCOS_IP ):
 		operation='EXIT',
 		objects=['Program'],
 		indx=0,
-		content=MSG_DONE
+		content=env.MSG_DONE
 		)
 	sys.exit(1)
 
