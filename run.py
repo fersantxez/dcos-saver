@@ -36,7 +36,7 @@ if __name__ == "__main__":
 			operation='LOAD',
 			objects=['Config'],
 			indx=0,
-			content=MSG_NO_CONFIG
+			content=env.MSG_NO_CONFIG
 			)
 		#create a new configuration file from defaults
 		config = create_config( env.CONFIG_FILE )
@@ -96,9 +96,20 @@ if __name__ == "__main__":
 		#all functions take the DCOS_IP and the DATA_DIR as parameters.
 		#result will be a dictionary of the users, groups, acls, etc.
 		func_result = globals()[func]( DCOS_IP=config['DCOS_IP'] )
-
 		#execute secondary function associated with the primary if it exists
 		#(get_users_groups, get_groups_users, get_permissions_actions)
 		if func in env.secondary_functions.keys():
 			sec_func = env.secondary_functions.get( func, 'noop' )
 			sec_result = globals()[sec_func]( config['DCOS_IP'], func_result )
+		else:
+			print('**DEBUG: sec_func not found. func: {0} ; env.secondary_functions.keys(): {1}'.format(func, env.secondary_functions.keys() ))
+
+	log(
+		log_level='INFO',
+		operation='EXIT',
+		objects=[''],
+		indx=0,
+		content=env.MSG_EXIT
+		)
+	print("Goodbye.")
+	sys.exit(0)

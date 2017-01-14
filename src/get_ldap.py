@@ -27,8 +27,8 @@ def get_ldap ( DCOS_IP ):
 	"""
 
 	api_endpoint = '/acs/api/v1/ldap/config'
-	url = 'http://'+config['DCOS_IP']+api_endpoint
 	config = helpers.get_config( env.CONFIG_FILE )	
+	url = 'http://'+config['DCOS_IP']+api_endpoint
 	headers = {
 		'Content-type': 'application/json',
 		'Authorization': 'token='+config['TOKEN'],

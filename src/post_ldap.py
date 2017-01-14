@@ -81,6 +81,7 @@ def post_ldap ( DCOS_IP ):
         indx=0,
         content=request.status_code
         )
+      return False
 
   helpers.log(
     log_level='INFO',

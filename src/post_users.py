@@ -35,6 +35,7 @@ def post_users ( DCOS_IP ):
       indx=0,
       content=error
       )
+    helpers.get_input( message=env.MSG_PRESS_ENTER )
     return False #return Error if file isn't available
 
   #load entire text file and convert to JSON - dictionary
@@ -81,6 +82,7 @@ def post_users ( DCOS_IP ):
         indx=0,
         content=request.status_code
         )
+      helpers.get_input( message=env.MSG_PRESS_ENTER )      
       return False
 
     helpers.log(
@@ -88,14 +90,13 @@ def post_users ( DCOS_IP ):
       operation='PUT',
       objects=['Users'],
       indx=0,
-      content='* DONE *'
+      content=MSG_DONE
       )
 
-    get_input( message=env.MSG_PRESS_ENTER )
-
+    helpers.get_input( message=env.MSG_PRESS_ENTER )
     return True
 
-def post_users_groups ( DCOS_IP ):
+def post_users_groups ( DCOS_IP, users ):
   """ 
   Get the list of Users_Groups associated with Users from the buffer and post it 
   to a DC/OS cluster available at the DCOS_IP argument.
@@ -120,6 +121,7 @@ def post_users_groups ( DCOS_IP ):
       indx=0,
       content=error
       )
+    helpers.get_input( message=env.MSG_PRESS_ENTER )
     return False
 
   #load entire text file and convert to JSON - dictionary
@@ -170,9 +172,8 @@ def post_users_groups ( DCOS_IP ):
     operation='PUT',
     objects=['Users', 'Groups'],
     indx=0,
-    content='* DONE *'
+    content=MSG_DONE
     )
 
-  get_input( message=env.MSG_PRESS_ENTER )
-
+  helpers.get_input( message=env.MSG_PRESS_ENTER )
   return True

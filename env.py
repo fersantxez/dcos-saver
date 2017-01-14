@@ -30,6 +30,7 @@ GROUPS_USERS_FILE=DATA_DIR+'/groups_users.json'
 ACLS_FILE=DATA_DIR+'/acls.json'
 ACLS_PERMISSIONS_FILE=DATA_DIR+'/acls_permissions.json'
 LDAP_FILE=DATA_DIR+'/ldap.json'
+AGENTS_FILE=DATA_DIR+'/agents.json'
 
 MENU_WIDTH = 80
 
@@ -50,13 +51,21 @@ MSG_TOKEN				=	'Current authentication token'
 MSG_IS_OK				=	'Is this configuration ok? (y/n)'
 MSG_ENTER_PARAM_CHANGE	=	'Enter parameter to change'
 MSG_ENTER_NEW_VALUE		=	MARK_INPUT
-MSG_PRESS_ENTER			=	'Press ENTER to continue...'
+MSG_PRESS_ENTER			=	'\nPress ENTER to continue...'
+MSG_DONE 				=	'								* DONE *\n'
+MSG_ERROR_LOGIN			=	'Error logging into DC/OS. Please check your configuration.'
+MSG_ERROR_CONFIG		=	'Error creating configuration.'
+MSG_ERROR_NO_GROUPS		=	'Error finding Groups in buffer. Please GET or LOAD Groups into buffer.'
+MSG_ERROR_NO_USERS		=	'Error finding Users in buffer. Please GET or LOAD Users into buffer.'
+MSG_ERROR_NO_ACLS		=	'Error finding ACLs in buffer. Please GET or LOAD ACLs into buffer.'
+MSG_ERROR_NO_LDAP		=	'Error finding LDAP configuration in buffer. Please GET or LOAD LDAP configuration into buffer.'
 MSG_AVAIL_CONFIGS		=	'Currently available configurations'
 MSG_ENTER_CONFIG_LOAD	=	'Enter name of the configuration to load'
 MSG_ENTER_CONFIG_SAVE	=	'Please note that saving under the same name as an existing config will OVERWRITE IT!.\nEnter name of the configuration to save '
 MSG_CURRENT_USERS		=	'Users currently in buffer: '
 MSG_CURRENT_GROUPS		=	'Groups currently in buffer: '
 MSG_CURRENT_ACLS		=	'ACLs and permissions currently in buffer: '
+MSG_CURRENT_LDAP		=	'LDAP configuration currently in buffer: '
 #Main menu
 MSG_AVAIL_CMD			= 'Available commands: 	'
 MSG_ENTER_CMD			= 'Enter commmand: 								'
@@ -69,16 +78,20 @@ MSG_GET_MENU			= 'Commands to GET information from DC/OS 		'
 MSG_GET_USERS			= 'GET Users from DC/OS cluster.				'
 MSG_GET_GROUPS			= 'GET Groups from DC/OS cluster.				'
 MSG_GET_ACLS			= 'GET ACLs from DC/OS cluster.					'
+MSG_GET_LDAP			= 'GET LDAP configuration from DC/OS cluster.	'
+MSG_GET_AGENTS			= 'GET AGENT status from DC/OS cluster			'
 MSG_GET_ALL				= 'GET ALL config from DC/OS cluster.			'
 MSG_PUT_MENU			= 'Commands to RESTORE information to DC/OS 	'
 MSG_PUT_USERS			= 'RESTORE Users to DC/OS cluster.				'
 MSG_PUT_GROUPS			= 'RESTORE Groups to DC/OS cluster.				'
 MSG_PUT_ACLS			= 'RESTORE ACLs to DC/OS cluster.				'
+MSG_PUT_LDAP			= 'RESTORE LDAP configuration to DC/OS cluster. '
 MSG_PUT_ALL				= 'RESTORE ALL config to DC/OS cluster.			'
 MSG_CHECK_MENU			= 'CHECK current local buffer configuration.	'
 MSG_CHECK_USERS			= 'CHECK Users in local buffer.					'
 MSG_CHECK_GROUPS		= 'CHECK Groups in local buffer.				'
 MSG_CHECK_ACLS			= 'CHECK ACLs in local buffer.					'
+MSG_CHECK_LDAP			= 'CHECK LDAP configuration in local buffer.	'
 MSG_EXIT				= 'EXIT this application.						'
 #Error messages
 ERROR_CONFIG_NOT_FOUND 	= 'Configuration not found.						'
@@ -98,20 +111,25 @@ hotkeys_login = {
 #hotkeys - main menu
 hotkeys_main = {
 'd' : 'list_configs',
-'l'	: 'load_configs',
 's'	: 'save_configs',
+'l' : 'load_configs',
 '0' : 'show_config',
 '1' : 'get_users',
 '2' : 'get_groups',
 '3' : 'get_acls',
+'z'	: 'get_ldap',
+'a' : 'get_agents',
 'g' : 'get_all',
 '4' : 'post_users',
 '5' : 'post_groups',
 '6' : 'post_acls',
+'k'	: 'post_ldap',
+#'b'	: 'post_agents', #no such thing
 'p' : 'post_all',
 '7' : 'check_users',
 '8' : 'check_groups',
 '9' : 'check_acls',
+'j'	: 'check_ldap',
 'x' : 'exit',
 '~' : 'noop'
 }
@@ -121,6 +139,7 @@ secondary_functions = {
 'get_users'		:'get_users_groups',
 'get_groups'	:'get_groups_users',
 'get_acls'		:'get_acls_permissions',
+'get_agents'	:'display_agents',
 'noop'			:'noop'	
 }
 
@@ -152,9 +171,12 @@ state = {
 'get_users':	NOT_DONE,
 'get_groups':	NOT_DONE,
 'get_acls':		NOT_DONE,
+'get_ldap':		NOT_DONE,
+'get_agents':	NOT_DONE,
 'get_full':		NOT_DONE,
 'put_users':	NOT_DONE,
 'put_groups':	NOT_DONE,
 'put_acls':		NOT_DONE,
+'put_ldap':		NOT_DONE,
 'put_full':		NOT_DONE
 }

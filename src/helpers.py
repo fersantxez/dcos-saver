@@ -19,6 +19,7 @@ from get_users import *
 from get_groups import *
 from get_acls import *
 from get_ldap import *
+from get_agents import *
 from post_users import *
 from post_groups import *
 from post_acls import *
@@ -122,11 +123,14 @@ def create_config ( config_path ) :
 		'GROUPS_USERS_FILE': env.GROUPS_USERS_FILE, 
 		'ACLS_FILE': env.ACLS_FILE, 
 		'ACLS_PERMISSIONS_FILE': env.ACLS_PERMISSIONS_FILE, 
+		'AGENTS_FILE': env.AGENTS_FILE,
 		'TOKEN': ''
 	}
 	config_file = open( config_path, 'w' )  	#open the config file for writing
 	config_file.write( json.dumps( config ) )	#read the entire file into a dict with JSON format
 	config_file.close()
+
+	get_input( message=env.MSG_PRESS_ENTER )
 	
 	return config
 
@@ -406,6 +410,38 @@ def check_acls ( DCOS_IP=None ):
 
 	return True 
 
+def check_ldap ( DCOS_IP=None ):
+	"""
+	List the LDAP configuration currently in the application's buffer.
+	Takes no parameters but DCOS_IP is left to use the same interface on all options.
+	"""
+
+	config = helpers.get_config( env.CONFIG_FILE )  
+	print('{0}'.format( env.MSG_CURRENT_LDAP ) )
+	#Open users file
+	try:  
+		#open the groups file and load the LIST of Groups from JSON
+		ldap_file = open( env.LDAP_FILE, 'r' )   
+	except IOError as error:
+		helpers.log(
+			log_level='ERROR',
+			operation='LOAD',
+			objects=['LDAP'],
+			indx=0,
+			content=env.MSG_ERROR_NO_LDAP
+			)
+		get_input( message=env.MSG_PRESS_ENTER )
+		return False #return Error if file isn't available
+    #load entire text file and convert to JSON - dictionary
+	ldap = json.loads( ldap_file.read() )
+	ldap_file.close()
+
+	print( 'LDAP Configuration: {1}'.format(ldap ) )
+
+	get_input( message=env.MSG_PRESS_ENTER )
+
+	return True 
+
 def delete_local_buffer ( path ) :
 	"""
 	Delete the local buffer that stores the temporary configuration.
@@ -518,6 +554,8 @@ def display_main_menu( config, state ):
 	hk = dict( zip( env.hotkeys_main.values(), env.hotkeys_main.keys() ) )	#invert keys and values in dictionary to index by key name
 
 	clear_screen()
+	print('**DEBUG: hk: {0}'.format(hk) )
+
 	menu_line()
 	menu_line( message=env.MSG_APP_TITLE )
 	menu_line()
@@ -531,18 +569,22 @@ def display_main_menu( config, state ):
 	menu_line( hotkey=hk['get_users'], message=env.MSG_GET_USERS )
 	menu_line( hotkey=hk['get_groups'], message=env.MSG_GET_GROUPS )
 	menu_line( hotkey=hk['get_acls'], message=env.MSG_GET_ACLS )
+	menu_line( hotkey=hk['get_ldap'], message=env.MSG_GET_LDAP )
+	menu_line( hotkey=hk['get_agents'], message=env.MSG_GET_AGENTS )
 	menu_line( hotkey=hk['get_all'], message=env.MSG_GET_ALL )
 	menu_line()
 	menu_line( message=env.MSG_PUT_MENU )
 	menu_line( hotkey=hk['post_users'], message=env.MSG_PUT_USERS )
 	menu_line( hotkey=hk['post_groups'], message=env.MSG_PUT_GROUPS )
 	menu_line( hotkey=hk['post_acls'], message=env.MSG_PUT_ACLS )
+	menu_line( hotkey=hk['post_ldap'], message=env.MSG_PUT_LDAP )
 	menu_line( hotkey=hk['post_all'], message=env.MSG_PUT_ALL )
 	menu_line()
 	menu_line( message=env.MSG_CHECK_MENU )
 	menu_line( hotkey=hk['check_users'], message=env.MSG_CHECK_USERS )
 	menu_line( hotkey=hk['check_groups'], message=env.MSG_CHECK_GROUPS )
 	menu_line( hotkey=hk['check_acls'], message=env.MSG_CHECK_ACLS )
+	menu_line( hotkey=hk['check_ldap'], message=env.MSG_CHECK_LDAP )
 	menu_line()
 	menu_line( hotkey=hk['exit'], message=env.MSG_EXIT )		
 	menu_line()
@@ -623,8 +665,33 @@ def exit( DCOS_IP ):
 		operation='EXIT',
 		objects=['Program'],
 		indx=0,
-		content='* DONE *'
+		content=MSG_DONE
 		)
 	sys.exit(1)
 
 	return None
+
+def get_all( DCOS_IP ):
+	"""
+	Do a full GET of all parameters supported. Simply calls other functions."
+	"""
+
+	get_users( DCOS_IP )
+	get_groups( DCOS_IP )
+	get_acls( DCOS_IP )
+	get_ldap( DCOS_IP )
+	get_agents( DCOS_IP )
+
+	return True
+
+def post_all( DCOS_IP ):
+	"""
+	Do a full GET of all parameters supported. Simply calls other functions."
+	"""
+
+	post_users( DCOS_IP )
+	post_groups( DCOS_IP )
+	post_acls( DCOS_IP )
+	post_ldap( DCOS_IP )
+
+	return True
