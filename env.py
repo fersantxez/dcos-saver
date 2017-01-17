@@ -149,6 +149,9 @@ secondary_functions = {
 'get_groups'	:'get_groups_users',
 'get_acls'		:'get_acls_permissions',
 'get_agents'	:'display_agents',
+'post_users'	:'post_users_groups',
+'post_groups'	:'post_groups_users',
+'post_acls'		:'post_acls_permissions',
 'noop'			:'noop'	
 }
 

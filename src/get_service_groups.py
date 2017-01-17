@@ -53,7 +53,7 @@ def get_service_groups ( DCOS_IP ):
 			operation='GET',
 			objects=['Service Groups'],
 			indx=0,
-			content=error
+			content=request.text
 			)
 
 	service_groups = request.text

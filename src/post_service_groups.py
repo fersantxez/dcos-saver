@@ -41,48 +41,54 @@ def post_service_groups ( DCOS_IP ):
 			operation='LOAD',
 			objects=['Service Groups'],
 			indx=0,
-			content=error
+			content=request.text
 			)
 		return False
 
 	#load entire text file and convert to JSON - dictionary
-	service_groups = json.loads( service_groups_file.read() )
+	root_service_group = json.loads( service_groups_file.read() )
 	service_groups_file.close()
 
-	#remove apps from the service group tree as we can't put both apps and groups in a request
-	helpers.remove_apps_from_service_group( service_group )
-	#build the request
-	api_endpoint = '/marathon/v2/groups'
-	url = 'http://'+config['DCOS_IP']+api_endpoint
-	headers = {
-		'Content-type': 'application/json',
-		'Authorization': 'token='+config['TOKEN'],
-	}
-	data = service_group
-	#send the request to PUT the new GROUP
-	try:
-		request = requests.post(
-			url,
-			headers = headers,
-			data = json.dumps( data )
-		)
-		request.raise_for_status()
-		#show progress after request
-		helpers.log(
-			log_level='INFO',
-			operation='PUT',
-			objects=['Service Groups'],
-			indx=0,
-			content=request.status_code
-		)
-	except requests.exceptions.HTTPError as error:
-		helpers.log(
-			log_level='ERROR',
-			operation='PUT',
-			objects=['Service Groups'],
-			indx=0,
-			content=request.status_code
-		)
-		return False
+	#'/' is a service group itself but it can't be posted directly (it exists).
+	#Need to POST the groups under it (one level) that don't exist yet.
+	#https://mesosphere.github.io/marathon/docs/rest-api.html#post-v2-groups
+
+
+	for index, service_group in enumerate( root_service_group['groups'] ):   #don't post `/` but only his 'groups'
+		helpers.format_service_group( service_group )
+		service_group = helpers.single_to_double_quotes( json.dumps( service_group ) ) 
+		#build the request
+		api_endpoint = '/marathon/v2/groups'
+		url = 'http://'+config['DCOS_IP']+api_endpoint
+		headers = {
+			'Content-type': 'application/json',
+			'Authorization': 'token='+config['TOKEN'],
+		}
+		#send the request to POST the new GROUP
+		try:
+			request = requests.post(
+				url,
+				headers = headers,
+				data = service_group
+			)
+			request.raise_for_status()
+			#show progress after request
+			helpers.log(
+				log_level='INFO',
+				operation='PUT',
+				objects=['Service Groups'],
+				indx=0,
+				content=request.status_code
+			)
+		except requests.exceptions.HTTPError as error:
+			helpers.log(
+				log_level='ERROR',
+				operation='PUT',
+				objects=['Service Groups'],
+				indx=0,
+				content=request.text
+			)
+	
+	helpers.get_input( message=env.MSG_PRESS_ENTER )
 
 	return True

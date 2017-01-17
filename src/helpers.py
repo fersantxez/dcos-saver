@@ -13,6 +13,7 @@ import sys
 from shutil import copy2
 from ntpath import basename
 import requests
+import getpass
 #sub-modules
 import env
 from get_users import *
@@ -172,8 +173,8 @@ def show_config ( DCOS_IP=None ) :
 	print('{0}'.format( env.MSG_CURRENT_CONFIG ) )
 	print('{0} : {1}'.format( env.MSG_DCOS_IP, config['DCOS_IP'] ) ) 
 	print('{0} : {1}'.format( env.MSG_DCOS_USERNAME, config['DCOS_USERNAME'] ) )
-	print('{0} : {1}'.format( env.MSG_DCOS_PASSWORD, config['DCOS_PASSWORD'] ) )
-	print('{0} : {1}'.format( env.MSG_DEFAULT_PASSWORD, config['DEFAULT_USER_PASSWORD'] ) )
+	print('{0} : {1}'.format( env.MSG_DCOS_PASSWORD, '*'*len(config['DCOS_PASSWORD']) ) )
+	print('{0} : {1}'.format( env.MSG_DEFAULT_PASSWORD, '*'*len(config['DEFAULT_USER_PASSWORD']) ) )
 	print('{0} : {1}'.format( env.MSG_TOKEN, config['TOKEN'] ) )	
 	get_input( message=env.MSG_PRESS_ENTER )
 
@@ -305,7 +306,7 @@ def check_users ( DCOS_IP=None ):
 			operation='LOAD',
 			objects=['Users', 'Groups'],
 			indx=0,
-			content=error
+			content=request.text
 			)
 		get_input( message=env.MSG_PRESS_ENTER )
 		return False #return Error if file isn't available
@@ -362,7 +363,7 @@ def check_groups ( DCOS_IP=None ):
 			operation='LOAD',
 			objects=['Groups', 'Users'],
 			indx=0,
-			content=error
+			content=request.text
 			)
 		get_input( message=env.MSG_PRESS_ENTER )
 		return False #return Error if file isn't available
@@ -573,9 +574,9 @@ def display_login_menu( config ):
 	menu_line()
 	menu_line( hotkey=hk['DCOS_USERNAME'], message=env.MSG_DCOS_USERNAME, config_param=config['DCOS_USERNAME'] )
 	menu_line()	
-	menu_line( hotkey=hk['DCOS_PASSWORD'], message=env.MSG_DCOS_PASSWORD, config_param=config['DCOS_PASSWORD'] )
+	menu_line( hotkey=hk['DCOS_PASSWORD'], message=env.MSG_DCOS_PASSWORD, config_param='*'*len(config['DCOS_PASSWORD']) )
 	menu_line()	
-	menu_line( hotkey=hk['DEFAULT_USER_PASSWORD'], message=env.MSG_DEFAULT_PASSWORD, config_param=config['DEFAULT_USER_PASSWORD'] )
+	menu_line( hotkey=hk['DEFAULT_USER_PASSWORD'], message=env.MSG_DEFAULT_PASSWORD, config_param='*'*len(config['DEFAULT_USER_PASSWORD']) )
 	menu_line()	
 
 	return True
@@ -593,7 +594,6 @@ def display_main_menu( config, state ):
 	hk = dict( zip( env.hotkeys_main.values(), env.hotkeys_main.keys() ) )	#invert keys and values in dictionary to index by key name
 
 	clear_screen()
-	print('**DEBUG: hk: {0}'.format(hk) )
 
 	menu_line()
 	menu_line( message=env.MSG_APP_TITLE )
@@ -685,7 +685,7 @@ def login_to_cluster ( config ):
 			operation='GET',
 			objects=[config],
 			indx=0,
-			content=error
+			content=request.text
 			)
 		return False
 
@@ -709,22 +709,24 @@ def walk_and_print( item, name ):
 
 	return True
 
-def remove_apps_from_service_group( service_group ):
+def format_service_group( service_group ):
 	"""
 	Walks a (potentially recursive tree-like structure of) service group in a dict that potentially include apps.
-	Removes all apps from the service group. Modifies the object passed as a parameter, does NOT return.
+	Removes fields that can't be posted initially from the service group:
+	- apps (empty it)
+	- version (remove it)
+	Changes the format of the "id" field to remove "/"
+	Modifies the object passed as a parameter, does NOT return.
 	"""
 
 	#remove my children's apps
 	for index,group in enumerate( service_group['groups'] ):
 		#if isinstance( group, list ):
-		remove_apps_from_service_group( group )
+		format_service_group( group )
 	
 	#remove my own apps
-	print("\n\n**DEBUG: I'm about to remove apps from : \n {0}".format(service_group))
-	#service_group['apps'] = [] #apps is an empty list
-	del service_group['apps']	#apps does not exist when posting groups
-	print("\n\n**DEBUG: There you go, this guy has no apps : \n {0}".format(service_group))
+	service_group['apps'] = [] #apps is an empty list
+	del service_group['version']
 
 	return True
 

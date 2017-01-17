@@ -52,7 +52,7 @@ def get_ldap ( DCOS_IP ):
 			operation='GET',
 			objects=['LDAP'],
 			indx=0,
-			content=error
+			content=request.text
 			)		
 
 	ldap_config = request.text

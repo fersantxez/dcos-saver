@@ -51,7 +51,7 @@ def get_acls ( DCOS_IP ):
 			operation='GET',
 			objects=['ACLs'],
 			indx=0,
-			content=error
+			content=request.text
 			)
 
 	acls = request.text
@@ -125,7 +125,7 @@ def get_acls_permissions ( DCOS_IP, acls ):
 				operation='GET',
 				objects=['ACLs:'+acl['rid'], 'Permissions'],
 				indx=index,
-				content=error
+				content=request.text
 				)	
 
 		permissions = request.json() 	#get memberships from the JSON
@@ -167,7 +167,7 @@ def get_acls_permissions ( DCOS_IP, acls ):
 						operation='GET',
 						objects=['ACLs: '+acl['rid'], 'Permissions','Users','Actions'],
 						indx=index3,
-						content=error
+						content=request.text
 						)	
 				action_value = request.json()
 				#add the value as another field of the action alongside name and url
@@ -209,7 +209,7 @@ def get_acls_permissions ( DCOS_IP, acls ):
 						operation='GET',
 						objects=['ACLs: '+acl['rid'], 'Permissions','Groups','Actions'],
 						indx=index3,
-						content=error
+						content=request.text
 						)	
 				action_value = request.json()
 				#add the value as another field of the action alongside name and url

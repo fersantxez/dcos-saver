@@ -52,7 +52,7 @@ def get_users ( DCOS_IP ):
 			operation='GET',
 			objects=['Users'],
 			indx=0,
-			content=error
+			content=request.text
 			)		
 
 	users = request.text
@@ -127,7 +127,7 @@ def get_users_groups ( DCOS_IP, users ):
 				operation='GET',
 				objects=['Users:'+user['uid'], 'Groups'],
 				indx=index,
-				content=error
+				content=request.text
 				)	
 
 		memberships = request.json() 	#get memberships from the JSON
@@ -175,7 +175,7 @@ def get_users_groups ( DCOS_IP, users ):
 					operation='GET',
 					objects=['Users: '+user['uid'],'Permissions'],
 					indx=index2,
-					content=error
+					content=request.text
 					)			
 			permissions = request.json() 	#get memberships from the JSON	
 			for index2, permission in ( enumerate( memberships['array'] ) ):

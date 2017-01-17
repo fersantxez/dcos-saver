@@ -33,7 +33,7 @@ def post_users ( DCOS_IP ):
       operation='LOAD',
       objects=['Users'],
       indx=0,
-      content=error
+      content=request.text
       )
     helpers.get_input( message=env.MSG_PRESS_ENTER )
     return False #return Error if file isn't available
@@ -80,21 +80,19 @@ def post_users ( DCOS_IP ):
         operation='PUT',
         objects=['Users'],
         indx=0,
-        content=request.status_code
-        )
-      helpers.get_input( message=env.MSG_PRESS_ENTER )      
-      return False
+        content=request.text
+        ) 
 
-    helpers.log(
-      log_level='INFO',
-      operation='PUT',
-      objects=['Users'],
-      indx=0,
-      content=MSG_DONE
-      )
+  helpers.log(
+    log_level='INFO',
+    operation='PUT',
+    objects=['Users'],
+    indx=0,
+    content=env.MSG_DONE
+    )
 
-    helpers.get_input( message=env.MSG_PRESS_ENTER )
-    return True
+  helpers.get_input( message=env.MSG_PRESS_ENTER )
+  return True
 
 def post_users_groups ( DCOS_IP, users ):
   """ 
@@ -119,7 +117,7 @@ def post_users_groups ( DCOS_IP, users ):
       operation='LOAD',
       objects=['Users', 'Groups'],
       indx=0,
-      content=error
+      content=request.text
       )
     helpers.get_input( message=env.MSG_PRESS_ENTER )
     return False
@@ -164,15 +162,15 @@ def post_users_groups ( DCOS_IP, users ):
           operation='PUT',
           objects=[ 'Users: '+uid , 'Groups: '+gid],
           indx=index2,
-          content=error
-          ) 
+          content=request.text
+          )
 
   helpers.log(
     log_level='INFO',
     operation='PUT',
     objects=['Users', 'Groups'],
     indx=0,
-    content=MSG_DONE
+    content=env.MSG_DONE
     )
 
   helpers.get_input( message=env.MSG_PRESS_ENTER )

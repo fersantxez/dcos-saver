@@ -43,7 +43,7 @@ def post_acls ( DCOS_IP ):
 			operation='LOAD',
 			objects=['ACLs'],
 			indx=0,
-			content=error
+			content=request.text
 			)
 		return False
 
@@ -88,12 +88,14 @@ def post_acls ( DCOS_IP ):
 				operation='PUT',
 				objects=['ACLs: '+rid],
 				indx=0,
-				content=request.status_code
+				content=request.text
 				)
-	
+
+	helpers.get_input( message=env.MSG_PRESS_ENTER )
+
 	return True
 
-def post_acls_permissions( DCOS_IP ):
+def post_acls_permissions( DCOS_IP, acls ):
 	"""
 	Get the list of acls_permissions from the load_path in the environment parameters,
 	and post it to a DC/OS cluster available at the DCOS_IP argument.
@@ -105,7 +107,7 @@ def post_acls_permissions( DCOS_IP ):
 	config = helpers.get_config( env.CONFIG_FILE )
 	try:  	
 		#open the GROUPS file and load the LIST of groups from JSON
-		acls_permissions_file = open( env.ACLS_FILE, 'r' )
+		acls_permissions_file = open( env.ACLS_PERMISSIONS_FILE, 'r' )
 		helpers.log(
 			log_level='INFO',
 			operation='LOAD',
@@ -119,8 +121,9 @@ def post_acls_permissions( DCOS_IP ):
 			operation='LOAD',
 			objects=['ACLs', 'Permissions'],
 			indx=0,
-			content=error
+			content=request.text
 			)
+		helpers.get_input( message=env.MSG_PRESS_ENTER )
 		return False
 
 	#load entire text file and convert to JSON - dictionary
@@ -131,92 +134,99 @@ def post_acls_permissions( DCOS_IP ):
 		rid = helpers.escape( acl_permission['rid'] )	
 
 		#array of users for this acl_permission
-		for index2, user in ( enumerate( acl_permission['users'] ) ): 
-		#PUT  /acls/{rid}/users/{uid}/{action}
+		if 'users' in acl_permission:
+			for index2, user in ( enumerate( acl_permission['users'] ) ): 
+			#PUT  /acls/{rid}/users/{uid}/{action}
 
-			uid = user['uid']
-			#array of actions for this user_acl_permission
-			for index3, action in ( enumerate( user['actions'] ) ): 
+				uid = user['uid']
+				#array of actions for this user_acl_permission
+				for index3, action in ( enumerate( user['actions'] ) ): 
 
-				name = helpers.escape( action['name'] )
-				#build the request
-				api_endpoint = '/acs/api/v1/acls/'+rid+'/users/'+uid+'/'+name
-				url = 'http://'+config['DCOS_IP']+api_endpoint
-				headers = {
-				'Content-type': 'application/json',
-				'Authorization': 'token='+config['TOKEN'],
-				}
-				#send the request to PUT the new USER
-				try:
-					request = requests.put(
-					url,
-					headers = headers
-					)
-					request.raise_for_status()
-					#show progress after request
-					helpers.log(
-						log_level='INFO',
-						operation='PUT',
-						objects=[ 'ACLs: '+rid,'Users: '+uid ],
-						indx=index2,
-						content=request.status_code
-						)	
-				except requests.exceptions.HTTPError as error:
-					helpers.log(
-						log_level='ERROR',
-						operation='PUT',
-						objects=[ 'ACLs: '+rid,'Users: '+uid ],
-						indx=index2,
-						content=error
+					name = helpers.escape( action['name'] )
+					#build the request
+					api_endpoint = '/acs/api/v1/acls/'+rid+'/users/'+uid+'/'+name
+					url = 'http://'+config['DCOS_IP']+api_endpoint
+					headers = {
+					'Content-type': 'application/json',
+					'Authorization': 'token='+config['TOKEN'],
+					}
+					#send the request to PUT the new USER
+					try:
+						request = requests.put(
+						url,
+						headers = headers
 						)
+						request.raise_for_status()
+						#show progress after request
+						helpers.log(
+							log_level='INFO',
+							operation='PUT',
+							objects=[ 'ACLs: '+rid,'Users: '+uid ],
+							indx=index2,
+							content=request.status_code
+							)	
+					except requests.exceptions.HTTPError as error:
+						helpers.log(
+							log_level='ERROR',
+							operation='PUT',
+							objects=[ 'ACLs: '+rid,'Users: '+uid ],
+							indx=index2,
+							content=request.text
+							)
+		else:
+			print('**DEBUG: no users in acl_permission {}: {}'.format(index, acl_permission))
 
 		#array of groups for this acl_permission
-		for index2, group in ( enumerate( acl_permission['groups'] ) ): 
-		#PUT  /acls/{rid}/groups/{gid}/{action}
+		if 'groups' in acl_permission:
+			for index2, group in ( enumerate( acl_permission['groups'] ) ): 
+			#PUT  /acls/{rid}/groups/{gid}/{action}
 
-			gid = helpers.escape( group['gid'] )
-			#array of actions for this group_acl_permission
-			for index3, action in ( enumerate( group['actions'] ) ): 
+				gid = helpers.escape( group['gid'] )
+				#array of actions for this group_acl_permission
+				for index3, action in ( enumerate( group['actions'] ) ): 
 
-				name = helpers.escape( action['name'] )
-				#build the request
-				api_endpoint = '/acs/api/v1/acls/'+rid+'/groups/'+gid+'/'+name
-				url = 'http://'+config['DCOS_IP']+api_endpoint
-				headers = {
-				'Content-type': 'application/json',
-				'Authorization': 'token='+config['TOKEN'],
-				}
-				#send the request to PUT the new USER
-				try:
-					request = requests.put(
-					url,
-					headers = headers
-					)
-					request.raise_for_status()
-					#show progress after request
-					helpers.log(
-						log_level='INFO',
-						operation='PUT',
-						objects=[ 'ACLs: '+rid,'Groups: '+gid ],
-						indx=index2,
-						content=request.status_code
-						)	
-				except requests.exceptions.HTTPError as error:
-					helpers.log(
-						log_level='ERROR',
-						operation='PUT',
-						objects=[ 'ACLs: '+rid,'Groups: '+gid ],
-						indx=index2,
-						content=error
-						)	
-		
+					name = helpers.escape( action['name'] )
+					#build the request
+					api_endpoint = '/acs/api/v1/acls/'+rid+'/groups/'+gid+'/'+name
+					url = 'http://'+config['DCOS_IP']+api_endpoint
+					headers = {
+					'Content-type': 'application/json',
+					'Authorization': 'token='+config['TOKEN'],
+					}
+					#send the request to PUT the new USER
+					try:
+						request = requests.put(
+						url,
+						headers = headers
+						)
+						request.raise_for_status()
+						#show progress after request
+						helpers.log(
+							log_level='INFO',
+							operation='PUT',
+							objects=[ 'ACLs: '+rid,'Groups: '+gid ],
+							indx=index2,
+							content=request.status_code
+							)	
+					except requests.exceptions.HTTPError as error:
+						helpers.log(
+							log_level='ERROR',
+							operation='PUT',
+							objects=[ 'ACLs: '+rid,'Groups: '+gid ],
+							indx=index2,
+							content=request.text
+							)	
+		else:
+			print('**DEBUG: no groups in acl_permission {}: {}'.format(index, acl_permission))
+
 	helpers.log(
 		log_level='INFO',
 		operation='PUT',
 		objects=['ACLs','Permissions'],
 		indx=0,
-		content=MSG_DONE
+		content=env.MSG_DONE
 		)
+	helpers.get_input( message=env.MSG_PRESS_ENTER )
 
 	return True
 

@@ -41,7 +41,7 @@ def post_groups ( DCOS_IP ):
 			operation='LOAD',
 			objects=['Groups'],
 			indx=0,
-			content=error
+			content=request.text
 			)
 		return False
 
@@ -86,14 +86,15 @@ def post_groups ( DCOS_IP ):
 				operation='PUT',
 				objects=['Groups: '+gid],
 				indx=0,
-				content=request.status_code
+				content=request.text
 				)
-			return False
+
+	helpers.get_input( message=env.MSG_PRESS_ENTER )
 
 	return True
 	
 
-def post_groups_users( DCOS_IP ):
+def post_groups_users( DCOS_IP, groups ):
 	""" 
 	Get the list of groups_users from the load_path provided as an argument,
 	and post it to a DC/OS cluster available at the DCOS_IP argument.
@@ -116,8 +117,9 @@ def post_groups_users( DCOS_IP ):
 			operation='LOAD',
 			objects=['Groups', 'Users'],
 			indx=0,
-			content=error
+			content=request.text
 			)
+		helpers.get_input( message=env.MSG_PRESS_ENTER )
 		return False
 
 	#load entire text file and convert to JSON - dictionary
@@ -160,17 +162,18 @@ def post_groups_users( DCOS_IP ):
 					operation='PUT',
 					objects=[ 'Groups: '+gid,'Users: '+uid ],
 					indx=index2,
-					content=error
+					content=request.text
 					)
-				return False
 
 	helpers.log(
 		log_level='INFO',
 		operation='PUT',
 		objects=['Groups','Users'],
 		indx=0,
-		content=MSG_DONE
+		content=env.MSG_DONE
 		)
-	
+
+	helpers.get_input( message=env.MSG_PRESS_ENTER )
+
 	return True	
 

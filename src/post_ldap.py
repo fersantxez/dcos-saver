@@ -41,7 +41,7 @@ def post_ldap ( DCOS_IP ):
       operation='LOAD',
       objects=['LDAP'],
       indx=0,
-      content=error
+      content=request.text
       )
     return False
 
@@ -81,14 +81,14 @@ def post_ldap ( DCOS_IP ):
         indx=0,
         content=request.status_code
         )
-      return False
 
   helpers.log(
     log_level='INFO',
     operation='PUT',
     objects=['Users'],
     indx=0,
-    content=MSG_DONE
+    content=env.MSG_DONE
     )
 
+  helpers.get_input( message=env.MSG_PRESS_ENTER )
   return True

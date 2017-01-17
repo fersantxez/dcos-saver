@@ -51,7 +51,7 @@ def get_agents ( DCOS_IP ):
 			operation='GET',
 			objects=['AGENTS'],
 			indx=0,
-			content=error
+			content=request.text
 			)		
 
 	#save to AGENTS file
