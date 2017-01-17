@@ -67,7 +67,7 @@ def get_groups ( DCOS_IP ):
 		operation='GET',
 		objects=['Groups'],
 		indx=0,
-		content=MSG_DONE
+		content=env.MSG_DONE
 		)	
 	groups_dict = dict( json.loads( groups ) )
 	
@@ -180,7 +180,7 @@ def get_groups_users ( DCOS_IP, groups ):
 		operation='GET',
 		objects=['Groups','Users'],
 		indx=0,
-		content=MSG_DONE
+		content=env.MSG_DONE
 		)	
 
 	return groups_users

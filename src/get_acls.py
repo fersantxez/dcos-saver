@@ -64,7 +64,7 @@ def get_acls ( DCOS_IP ):
 		operation='GET',
 		objects=['ACLs'],
 		indx=0,
-		content=MSG_DONE
+		content=env.MSG_DONE
 		)
 
 	acls_dict = dict( json.loads( acls ) )
@@ -227,7 +227,7 @@ def get_acls_permissions ( DCOS_IP, acls ):
 		operation='GET',
 		objects=['ACLs', 'Permissions'],
 		indx=0,
-		content=MSG_DONE
+		content=env.MSG_DONE
 		)
 
 	return acls_permissions
